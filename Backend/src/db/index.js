@@ -1,0 +1,15 @@
+module.exports = {
+  clinicDb: require('./clinic.db'),
+  userDb: require('./user.db'),
+  patientDb: require('./patient.db'),
+  appointmentDb: require('./appointment.db'),
+  treatmentCategoryDb: require('./treatment-category.db'),
+  clinicalRecordDb: require('./clinical-record.db'),
+  invoiceDb: require('./invoice.db'),
+  paymentDb: require('./payment.db'),
+  fileDb: require('./file.db'),
+  aiReportDb: require('./ai-report.db'),
+  statsDb: require('./stats.db'),
+  notificationDb: require('./notification.db'),
+  auditLogDb: require('./audit-log.db'),
+}

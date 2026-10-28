@@ -1,0 +1,7 @@
+{
+  "task_id": "task-phase3-supabase-migration",
+  "task_description": "Migrate the Dwarka Dental Clinic backend from MongoDB Atlas (Mongoose) to Supabase PostgreSQL. Fix critical auth security gaps, install Supabase client, create a data-access layer, migrate all 7 services and the dashboard route, migrate the seed, remove Mongoose, and migrate file storage to Supabase Storage. No frontend changes required.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}
