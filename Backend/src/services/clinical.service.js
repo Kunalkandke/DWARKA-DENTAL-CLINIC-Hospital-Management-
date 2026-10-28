@@ -1,5 +1,6 @@
 const { clinicalRecordDb, appointmentDb, patientDb, clinicDb } = require('../db')
 const ApiError = require('../utils/ApiError')
+const auditService = require('./audit.service')
 
 /**
  * Fetch clinical records for a patient, sorted newest-first.
@@ -20,7 +21,7 @@ async function getClinicalRecordsByPatient(patientId) {
  * Add a new clinical record for a patient visit.
  * @param {object} body  { patientId, appointmentId?, doctorId, chiefComplaint, diagnosis, treatment, clinicalNotes, followUpDate?, followUpInstructions?, prescription? }
  */
-async function addClinicalRecord(body) {
+async function addClinicalRecord(body, requestingUser = null, req = null) {
   const clinic = await clinicDb.getDefaultClinic()
   const {
     patientId, appointmentId, doctorId, chiefComplaint,
@@ -47,6 +48,17 @@ async function addClinicalRecord(body) {
     // dental_chart is passed as a JS array — Supabase serializes to JSONB automatically
     dental_chart: Array.isArray(dentalChart) ? dentalChart : [],
     status: 'completed',
+  })
+
+  // Audit log
+  auditService.log({
+    action: 'clinical.add',
+    userId: requestingUser?.id,
+    entityType: 'clinical_record',
+    entityId: record.id,
+    changes: { patient_id: patientId, diagnosis, treatment },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
   })
 
   // Update patient summary fields

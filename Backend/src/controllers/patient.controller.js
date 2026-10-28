@@ -17,23 +17,20 @@ const getPatient = asyncHandler(async (req, res) => {
 
 /** POST /api/patients */
 const addPatient = asyncHandler(async (req, res) => {
-  const result = await patientService.createPatient(req.body);
+  const result = await patientService.createPatient(req.body, req.user, req);
   return new ApiResponse(201, result, 'Patient registered successfully').send(res);
 });
 
 /** PUT /api/patients/:id */
 const updatePatient = asyncHandler(async (req, res) => {
-  const patient = await patientService.updatePatient(req.params.id, req.body);
+  const patient = await patientService.updatePatient(req.params.id, req.body, req.user, req);
   return new ApiResponse(200, { patient }, 'Patient updated').send(res);
 });
 
-/** DELETE /api/patients/:id — Admin and Receptionist */
+/** DELETE /api/patients/:id — Admin only (enforced on the route via requireRole) */
 const softDeletePatient = asyncHandler(async (req, res) => {
-  if (!['admin', 'receptionist'].includes(req.user?.role)) {
-    throw ApiError.forbidden('Admin or Receptionist role required.');
-  }
-  await patientService.softDeletePatient(req.params.id);
-  return new ApiResponse(200, null, 'Patient soft-deleted successfully').send(res);
+  await patientService.softDeletePatient(req.params.id, req.user, req);
+  return new ApiResponse(200, null, 'Patient archived successfully').send(res);
 });
 
 module.exports = { getPatients, getPatient, addPatient, updatePatient, softDeletePatient };

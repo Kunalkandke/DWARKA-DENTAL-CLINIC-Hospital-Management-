@@ -14,7 +14,12 @@ const config = {
 };
 
 if (config.JWT_SECRET === 'dwarka-dental-jwt-secret-change-in-production') {
-  console.warn('WARNING: Using default JWT_SECRET. Set JWT_SECRET in .env for production.');
+  if (config.NODE_ENV === 'production') {
+    console.error('FATAL: Using the default JWT_SECRET is not allowed in production. Set a strong JWT_SECRET in .env.');
+    process.exit(1);
+  } else {
+    console.warn('WARNING: Using default JWT_SECRET. Set JWT_SECRET in .env for production.');
+  }
 }
 
 if (!config.SUPABASE_URL || !config.SUPABASE_SERVICE_ROLE_KEY) {

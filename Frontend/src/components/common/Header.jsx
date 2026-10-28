@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Menu, Search } from 'lucide-react';
+import { Bell, Menu, Search, X, ChevronRight } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { toggleMobileSidebar } from '../../app/store';
 import { useNotifications } from '../../hooks/useNotifications';
@@ -13,14 +13,17 @@ function usePageTitle() {
   const { pathname } = useLocation();
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length < 2) return 'Dashboard';
-  if (segments.includes('patients') && segments.length >= 3) {
-    return 'Patient Profile';
-  }
+  if (segments.includes('patients') && segments.length >= 3) return 'Patient Profile';
   const last = segments[segments.length - 1];
-  return last
-    .split('-')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+  return last.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+/** Breadcrumb segments from path */
+function useBreadcrumb() {
+  const { pathname } = useLocation();
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length <= 1) return [];
+  return segments.slice(1).map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
 }
 
 export default function Header() {
@@ -29,17 +32,15 @@ export default function Header() {
   const { unreadCount } = useNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const pageTitle = usePageTitle();
+  const breadcrumbs = useBreadcrumb();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
   function handleSearchChange(e) {
     const val = e.target.value;
-    if (val) {
-      setSearchParams({ q: val }, { replace: true });
-    } else {
-      setSearchParams({}, { replace: true });
-    }
+    if (val) setSearchParams({ q: val }, { replace: true });
+    else setSearchParams({}, { replace: true });
   }
 
   function handleClearSearch() {
@@ -47,55 +48,105 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-20 h-14 flex items-center gap-4 px-6 bg-white border-b border-[var(--color-border)] shadow-2xs">
+    <header
+      className="sticky top-0 z-20 h-[60px] flex items-center gap-4 px-6"
+      style={{
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(226,232,240,0.8)',
+        boxShadow: '0 1px 4px rgba(15,23,42,0.04)',
+      }}
+    >
       {/* Mobile menu toggle */}
       <button
         onClick={() => dispatch(toggleMobileSidebar())}
-        className="md:hidden p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] transition-colors cursor-pointer"
+        className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] transition-colors cursor-pointer"
         aria-label="Open navigation"
       >
         <Menu size={20} />
       </button>
 
-      {/* Page title */}
-      <h1 className="text-base font-semibold text-[var(--color-text)] hidden sm:block">{pageTitle}</h1>
+      {/* Page title + breadcrumb */}
+      <div className="hidden sm:flex flex-col justify-center min-w-0">
+        {breadcrumbs.length > 1 ? (
+          <div className="flex items-center gap-1 text-xs text-[var(--color-text-subtle)] mb-0.5">
+            {breadcrumbs.slice(0, -1).map((b, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {i > 0 && <ChevronRight size={10} />}
+                {b}
+              </span>
+            ))}
+            <ChevronRight size={10} />
+          </div>
+        ) : null}
+        <h1 className="text-[15px] font-bold text-[var(--color-text)] leading-tight tracking-tight truncate">
+          {pageTitle}
+        </h1>
+      </div>
 
       <div className="flex-1" />
 
-      {/* Real Interactive Top Header Search Bar */}
-      <div className="flex items-center gap-2 px-3.5 h-9 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700 min-w-[240px] focus-within:ring-2 focus-within:ring-[var(--color-primary-500)] focus-within:bg-white transition-all">
-        <Search size={15} className="text-slate-400 flex-shrink-0" />
+      {/* Premium Search Bar */}
+      <div
+        className="hidden sm:flex items-center gap-2.5 px-3.5 h-9 rounded-xl transition-all"
+        style={{
+          background: 'var(--color-bg-subtle)',
+          border: '1.5px solid var(--color-border)',
+          minWidth: '220px',
+          maxWidth: '320px',
+          boxShadow: 'var(--shadow-xs)',
+        }}
+        onFocus={e => {
+          e.currentTarget.style.background = '#fff';
+          e.currentTarget.style.borderColor = 'var(--color-primary-400)';
+          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
+        }}
+        onBlur={e => {
+          e.currentTarget.style.background = 'var(--color-bg-subtle)';
+          e.currentTarget.style.borderColor = 'var(--color-border)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-xs)';
+        }}
+      >
+        <Search size={14} className="text-[var(--color-text-subtle)] flex-shrink-0" />
         <input
           type="text"
-          placeholder="Search patient name, phone, doctor..."
+          placeholder="Search patients, doctors..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="bg-transparent border-none outline-none text-xs w-full text-slate-900 placeholder:text-slate-400 font-medium"
+          className="bg-transparent border-none outline-none text-[13px] w-full text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] font-medium"
         />
         {searchQuery && (
           <button
             onClick={handleClearSearch}
-            className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer"
+            className="w-4 h-4 flex items-center justify-center rounded-full bg-slate-300 hover:bg-slate-400 transition-colors cursor-pointer flex-shrink-0"
             title="Clear search"
           >
-            ✕
+            <X size={9} className="text-slate-600" />
           </button>
         )}
       </div>
 
-      {/* Notifications */}
+      {/* Notification Bell */}
       <div className="relative">
         <button
           id="notifications-toggle"
           onClick={() => setNotifOpen(v => !v)}
-          className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+          className="relative w-9 h-9 flex items-center justify-center rounded-xl text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+          style={{ border: '1.5px solid var(--color-border)' }}
           aria-label={`Notifications${unreadCount > 0 ? ` — ${unreadCount} unread` : ''}`}
           aria-expanded={notifOpen}
           aria-controls="notifications-panel"
         >
-          <Bell size={18} />
+          <Bell size={17} />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
+            <span
+              className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center text-white text-[9px] font-bold rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                boxShadow: '0 1px 4px rgba(239,68,68,0.5)',
+                minWidth: '16px',
+              }}
+            >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -106,8 +157,16 @@ export default function Header() {
         )}
       </div>
 
-      {/* User avatar */}
-      <Avatar name={user?.name || ''} size="sm" />
+      {/* User section */}
+      <div className="flex items-center gap-2.5 pl-2 border-l border-[var(--color-border)]">
+        <div className="hidden md:flex flex-col items-end">
+          <span className="text-[13px] font-semibold text-[var(--color-text)] leading-tight">
+            {user?.name?.split(' ')[0] || 'User'}
+          </span>
+          <span className="text-[10px] text-[var(--color-text-subtle)] capitalize">{user?.role || 'Staff'}</span>
+        </div>
+        <Avatar name={user?.name || ''} size="sm" />
+      </div>
     </header>
   );
 }

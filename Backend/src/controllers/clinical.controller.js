@@ -14,7 +14,7 @@ const getClinicalRecordsByPatient = asyncHandler(async (req, res) => {
  * POST /api/clinical
  */
 const addClinicalRecord = asyncHandler(async (req, res) => {
-  const record = await clinicalService.addClinicalRecord(req.body);
+  const record = await clinicalService.addClinicalRecord(req.body, req.user, req);
   return new ApiResponse(201, { record }, 'Clinical record added').send(res);
 });
 

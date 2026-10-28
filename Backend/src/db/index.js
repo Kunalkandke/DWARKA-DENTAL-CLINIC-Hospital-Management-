@@ -12,4 +12,13 @@ module.exports = {
   statsDb: require('./stats.db'),
   notificationDb: require('./notification.db'),
   auditLogDb: require('./audit-log.db'),
+  rolePermissionsDb: require('./rolePermissions.db'),
+  clinicSettingsDb: require('./clinicSettings.db'),
+  clinicHolidayDb: require('./clinicHoliday.db'),
+  chairDb: require('./chair.db'),
+  doctorAvailabilityDb: require('./doctorAvailability.db'),
+  doctorBlockDb: require('./doctorBlock.db'),
+  refreshTokenDb: require('./refreshToken.db'),
+  attendanceDb: require('./attendance.db'),
+  leaveRequestDb: require('./leaveRequest.db'),
 }

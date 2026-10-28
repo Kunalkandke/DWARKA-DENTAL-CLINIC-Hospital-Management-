@@ -5,20 +5,46 @@ const { verifyToken } = require('../utils/generateToken');
 const ApiError = require('../utils/ApiError');
 const { userDb } = require('../db');
 
+function clientContext(req) {
+  return {
+    ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || req.ip || null,
+    userAgent: req.headers['user-agent'] || null,
+  };
+}
+
 /**
  * POST /api/auth/login
- * Returns: { success, user, role, token }
+ * Returns: { success, user, role, token, refreshToken }
  */
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const result = await authService.login(email, password);
+  const result = await authService.login(email, password, clientContext(req));
   return new ApiResponse(200, result, 'Login successful').send(res);
+});
+
+/**
+ * POST /api/auth/refresh
+ * Body: { refreshToken }. Returns new { token, refreshToken, role, user }.
+ */
+const refresh = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body || {};
+  const result = await authService.refresh(refreshToken, clientContext(req));
+  return new ApiResponse(200, result, 'Token refreshed').send(res);
+});
+
+/**
+ * POST /api/auth/logout
+ * Body: { refreshToken, all? }. Revokes the refresh token (and all if `all`).
+ */
+const logout = asyncHandler(async (req, res) => {
+  const { refreshToken, all } = req.body || {};
+  await authService.logout(refreshToken, !!all);
+  return new ApiResponse(200, null, 'Logged out').send(res);
 });
 
 /**
  * GET /api/auth/me
  * Verify JWT and return current user profile.
- * Frontend calls this on refresh to validate the stored token.
  */
 const me = asyncHandler(async (req, res) => {
   const authHeader = req.headers.authorization;
@@ -33,7 +59,6 @@ const me = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized('Invalid or expired token.');
   }
 
-  // Use Supabase data-access layer — no Mongoose User model
   const user = await userDb.findById(decoded.id);
   if (!user || user.status !== 'active') {
     throw ApiError.unauthorized('User not found or inactive.');
@@ -52,4 +77,4 @@ const me = asyncHandler(async (req, res) => {
   }, 'Authenticated').send(res);
 });
 
-module.exports = { login, me };
+module.exports = { login, refresh, logout, me };

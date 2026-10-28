@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Stethoscope, RefreshCw, Search, Edit3, Plus } from 'lucide-react';
+import { Stethoscope, RefreshCw, Search, Edit3, Plus, CalendarDays, Clock, Ban, ChevronDown, ChevronRight, Trash2, AlertTriangle } from 'lucide-react';
 import Avatar from '../../components/ui/Avatar';
 import EmptyState from '../../components/ui/EmptyState';
 import Modal from '../../components/ui/Modal';
@@ -10,16 +10,315 @@ const DEFAULT_DOCTORS = [
   { id: 'doc-2', name: 'Dr. H M Sanap', specialization: 'Endodontist & Root Canal Specialist', email: 'dr.sanap@dwarkadental.com', phone: '+91 98765 22222', status: 'active' },
 ];
 
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+// ─── Doctor Availability Panel ─────────────────────────────────────────────────
+function DoctorAvailabilityPanel({ doctor, onClose }) {
+  const docId = doctor.id || doctor._id;
+  const [slots, setSlots]   = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]    = useState('');
+  const [activeTab, setActiveTab] = useState('slots'); // 'slots' | 'blocks'
+
+  // Add slot form
+  const [addingSlot, setAddingSlot] = useState(false);
+  const [slotForm, setSlotForm] = useState({ day_of_week: 0, start_time: '09:00', end_time: '17:00', effective_from: new Date().toISOString().split('T')[0] });
+  const [savingSlot, setSavingSlot] = useState(false);
+  const [deletingSlotId, setDeletingSlotId] = useState(null);
+
+  // Add block form
+  const [addingBlock, setAddingBlock] = useState(false);
+  const [blockForm, setBlockForm] = useState({ start_at: '', end_at: '', reason: '' });
+  const [savingBlock, setSavingBlock] = useState(false);
+  const [deletingBlockId, setDeletingBlockId] = useState(null);
+
+  const load = useCallback(async () => {
+    if (!docId || String(docId).startsWith('doc-')) {
+      setError('Availability management is only available for doctors registered in the system (with a database ID).');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const [slotsRes, blocksRes] = await Promise.all([
+        api.getDoctorAvailability(docId).catch(() => ({ data: { availability: [] } })),
+        api.getDoctorBlocks(docId).catch(() => ({ data: { blocks: [] } })),
+      ]);
+      setSlots(slotsRes?.data?.availability || []);
+      setBlocks(blocksRes?.data?.blocks || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load availability');
+    } finally {
+      setLoading(false);
+    }
+  }, [docId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleAddSlot = async (e) => {
+    e.preventDefault();
+    setSavingSlot(true);
+    try {
+      await api.createDoctorAvailability(docId, {
+        ...slotForm,
+        day_of_week: Number(slotForm.day_of_week),
+        is_active: true,
+      });
+      setAddingSlot(false);
+      setSlotForm({ day_of_week: 0, start_time: '09:00', end_time: '17:00', effective_from: new Date().toISOString().split('T')[0] });
+      load();
+    } catch (err) {
+      setError(err.message || 'Failed to add slot');
+    } finally {
+      setSavingSlot(false);
+    }
+  };
+
+  const handleDeleteSlot = async (slotId) => {
+    if (!window.confirm('Remove this availability slot?')) return;
+    setDeletingSlotId(slotId);
+    try {
+      await api.deleteDoctorAvailability(docId, slotId);
+      setSlots(prev => prev.filter(s => s.id !== slotId));
+    } catch (err) {
+      setError(err.message || 'Failed to remove slot');
+    } finally {
+      setDeletingSlotId(null);
+    }
+  };
+
+  const handleAddBlock = async (e) => {
+    e.preventDefault();
+    if (!blockForm.start_at || !blockForm.end_at) { setError('Start and end dates are required.'); return; }
+    if (blockForm.end_at <= blockForm.start_at) { setError('End date must be after start date.'); return; }
+    setSavingBlock(true);
+    setError('');
+    try {
+      await api.createDoctorBlock(docId, {
+        start_at: new Date(blockForm.start_at).toISOString(),
+        end_at: new Date(blockForm.end_at).toISOString(),
+        reason: blockForm.reason || 'Leave',
+      });
+      setAddingBlock(false);
+      setBlockForm({ start_at: '', end_at: '', reason: '' });
+      load();
+    } catch (err) {
+      setError(err.message || 'Failed to add block');
+    } finally {
+      setSavingBlock(false);
+    }
+  };
+
+  const handleDeleteBlock = async (blockId) => {
+    if (!window.confirm('Remove this leave/block?')) return;
+    setDeletingBlockId(blockId);
+    try {
+      await api.deleteDoctorBlock(docId, blockId);
+      setBlocks(prev => prev.filter(b => b.id !== blockId));
+    } catch (err) {
+      setError(err.message || 'Failed to remove block');
+    } finally {
+      setDeletingBlockId(null);
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <Modal open={true} onClose={onClose} title={`Availability — ${doctor.name}`} size="lg">
+      <div className="space-y-4">
+        {/* Tabs */}
+        <div className="flex gap-1 bg-[var(--color-bg-subtle)] p-1 rounded-lg w-fit">
+          {[
+            { key: 'slots',  label: '📅 Working Hours', count: slots.length },
+            { key: 'blocks', label: '🚫 Leave / Blocks', count: blocks.length },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`px-4 py-1.5 text-sm font-medium rounded transition-colors ${activeTab === t.key ? 'bg-white shadow text-[var(--color-primary-600)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}`}
+            >
+              {t.label}
+              {t.count > 0 && <span className="ml-1.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-primary-100)] text-[var(--color-primary-700)]">{t.count}</span>}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            <AlertTriangle size={14} className="shrink-0 mt-0.5" /> {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => <div key={i} className="h-10 bg-[var(--color-border)] rounded-lg animate-pulse" />)}
+          </div>
+        ) : (
+          <>
+            {/* ── Slots Tab ── */}
+            {activeTab === 'slots' && (
+              <div className="space-y-3">
+                {slots.length === 0 ? (
+                  <div className="text-center py-6 text-[var(--color-text-muted)] text-sm">
+                    <Clock size={28} className="mx-auto mb-2 opacity-30" />
+                    <p>No working hours defined. Add a slot to enable booking.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {slots.map(s => (
+                      <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-[var(--color-border)] bg-white group hover:bg-[var(--color-bg-subtle)] transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${s.is_active !== false ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                          <div>
+                            <p className="text-sm font-semibold text-[var(--color-text)] capitalize">{DAYS[s.day_of_week] || `Day ${s.day_of_week}`}</p>
+                            <p className="text-xs text-[var(--color-text-muted)]">{s.start_time} – {s.end_time} · From {s.effective_from?.split('T')[0] || '—'}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteSlot(s.id)}
+                          disabled={deletingSlotId === s.id}
+                          className="btn btn-ghost btn-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          {deletingSlotId === s.id ? '…' : <Trash2 size={12} />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Slot Form */}
+                {addingSlot ? (
+                  <form onSubmit={handleAddSlot} className="p-4 bg-[var(--color-bg-subtle)] rounded-xl border border-[var(--color-border)] space-y-3">
+                    <p className="text-sm font-semibold text-[var(--color-text)]">Add Working Hours Slot</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Day of Week *</label>
+                        <select
+                          value={slotForm.day_of_week}
+                          onChange={e => setSlotForm(f => ({ ...f, day_of_week: e.target.value }))}
+                          className="form-select text-sm"
+                          required
+                        >
+                          {DAYS.map((d, i) => <option key={d} value={i}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Effective From *</label>
+                        <input type="date" value={slotForm.effective_from} onChange={e => setSlotForm(f => ({ ...f, effective_from: e.target.value }))} className="form-input text-sm" required />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Start Time *</label>
+                        <input type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({ ...f, start_time: e.target.value }))} className="form-input text-sm" required />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">End Time *</label>
+                        <input type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({ ...f, end_time: e.target.value }))} className="form-input text-sm" required />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button type="button" onClick={() => setAddingSlot(false)} className="btn btn-outline btn-sm">Cancel</button>
+                      <button type="submit" disabled={savingSlot} className="btn btn-primary btn-sm">{savingSlot ? 'Saving…' : 'Add Slot'}</button>
+                    </div>
+                  </form>
+                ) : (
+                  <button onClick={() => setAddingSlot(true)} className="w-full py-2.5 border border-dashed border-[var(--color-border)] rounded-lg text-sm text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors flex items-center justify-center gap-1.5 font-medium">
+                    <Plus size={14} /> Add Working Hours Slot
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* ── Blocks Tab ── */}
+            {activeTab === 'blocks' && (
+              <div className="space-y-3">
+                {blocks.length === 0 ? (
+                  <div className="text-center py-6 text-[var(--color-text-muted)] text-sm">
+                    <Ban size={28} className="mx-auto mb-2 opacity-30" />
+                    <p>No leave or blocks recorded for this doctor.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {blocks.slice().sort((a, b) => a.start_at.localeCompare(b.start_at)).map(b => {
+                      const isPast = b.end_at < new Date().toISOString();
+                      return (
+                        <div key={b.id} className={`flex items-center justify-between p-3 rounded-lg border ${isPast ? 'border-[var(--color-border)] bg-[var(--color-bg-subtle)] opacity-60' : 'border-rose-200 bg-rose-50'} group transition-colors`}>
+                          <div className="flex items-center gap-3">
+                            <Ban size={14} className={isPast ? 'text-[var(--color-text-muted)]' : 'text-rose-600'} />
+                            <div>
+                              <p className="text-sm font-semibold text-[var(--color-text)]">{b.reason || 'Leave'}</p>
+                              <p className="text-xs text-[var(--color-text-muted)]">
+                                {new Date(b.start_at).toLocaleDateString('en-IN')} → {new Date(b.end_at).toLocaleDateString('en-IN')}
+                                {isPast && ' · Past'}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteBlock(b.id)}
+                            disabled={deletingBlockId === b.id}
+                            className="btn btn-ghost btn-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            {deletingBlockId === b.id ? '…' : <Trash2 size={12} />}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add Block Form */}
+                {addingBlock ? (
+                  <form onSubmit={handleAddBlock} className="p-4 bg-[var(--color-bg-subtle)] rounded-xl border border-[var(--color-border)] space-y-3">
+                    <p className="text-sm font-semibold text-[var(--color-text)]">Add Leave / Unavailability Block</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">From Date & Time *</label>
+                        <input type="datetime-local" value={blockForm.start_at} onChange={e => setBlockForm(f => ({ ...f, start_at: e.target.value }))} className="form-input text-sm" required />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Until Date & Time *</label>
+                        <input type="datetime-local" value={blockForm.end_at} onChange={e => setBlockForm(f => ({ ...f, end_at: e.target.value }))} className="form-input text-sm" required />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Reason</label>
+                      <input type="text" placeholder="e.g. Annual Leave, Conference, Sick Leave" value={blockForm.reason} onChange={e => setBlockForm(f => ({ ...f, reason: e.target.value }))} className="form-input text-sm" />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button type="button" onClick={() => setAddingBlock(false)} className="btn btn-outline btn-sm">Cancel</button>
+                      <button type="submit" disabled={savingBlock} className="btn btn-primary btn-sm">{savingBlock ? 'Saving…' : 'Add Block'}</button>
+                    </div>
+                  </form>
+                ) : (
+                  <button onClick={() => setAddingBlock(true)} className="w-full py-2.5 border border-dashed border-rose-200 rounded-lg text-sm text-rose-600 hover:bg-rose-50 transition-colors flex items-center justify-center gap-1.5 font-medium">
+                    <Plus size={14} /> Add Leave / Unavailability Block
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Main DoctorsPage ──────────────────────────────────────────────────────────
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState(DEFAULT_DOCTORS);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  
+
   // Edit & Add State
   const [editDoc, setEditDoc] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', specialization: 'General Dentistry' });
   const [saving, setSaving] = useState(false);
+
+  // Availability Management
+  const [availabilityDoc, setAvailabilityDoc] = useState(null);
 
   const loadDoctors = useCallback(async () => {
     setLoading(true);
@@ -177,12 +476,19 @@ export default function DoctorsPage() {
                     {doc.email && <p>✉️ {doc.email}</p>}
                   </div>
 
-                  <div className="pt-1 flex justify-end">
+                  <div className="pt-1 flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => handleEditClick(doc)}
                       className="btn btn-outline btn-xs flex items-center gap-1 text-[var(--color-primary-600)] cursor-pointer"
                     >
-                      <Edit3 size={12} /> Edit Doctor Info
+                      <Edit3 size={12} /> Edit Info
+                    </button>
+                    <button
+                      onClick={() => setAvailabilityDoc(doc)}
+                      className="btn btn-outline btn-xs flex items-center gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer"
+                      id={`manage-availability-${docId}`}
+                    >
+                      <CalendarDays size={12} /> Availability
                     </button>
                   </div>
                 </div>
@@ -269,6 +575,14 @@ export default function DoctorsPage() {
             </div>
           </form>
         </Modal>
+      )}
+
+      {/* Doctor Availability Modal */}
+      {availabilityDoc && (
+        <DoctorAvailabilityPanel
+          doctor={availabilityDoc}
+          onClose={() => setAvailabilityDoc(null)}
+        />
       )}
     </div>
   );

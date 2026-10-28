@@ -17,7 +17,7 @@ const getByPatient = asyncHandler(async (req, res) => {
 
 /** POST /api/payments */
 const addPayment = asyncHandler(async (req, res) => {
-  const payment = await paymentService.addPayment(req.body, req.user);
+  const payment = await paymentService.addPayment(req.body, req.user, req);
   return new ApiResponse(201, { payment }, 'Payment recorded').send(res);
 });
 
@@ -26,7 +26,7 @@ const softDeletePayment = asyncHandler(async (req, res) => {
   if (!['admin', 'receptionist'].includes(req.user?.role)) {
     throw ApiError.forbidden('Admin or Receptionist role required.');
   }
-  await paymentService.softDeletePayment(req.params.id);
+  await paymentService.softDeletePayment(req.params.id, req.user, req);
   return new ApiResponse(200, null, 'Payment record voided').send(res);
 });
 

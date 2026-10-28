@@ -17,14 +17,20 @@ const getByPatient = asyncHandler(async (req, res) => {
 
 /** POST /api/appointments — book appointment */
 const bookAppointment = asyncHandler(async (req, res) => {
-  const appointment = await appointmentService.bookAppointment(req.body, req.user);
+  const appointment = await appointmentService.bookAppointment(req.body, req.user, req);
   return new ApiResponse(201, appointment, 'Appointment booked successfully').send(res);
 });
 
 /** PUT /api/appointments/:id/status — update status */
 const updateStatus = asyncHandler(async (req, res) => {
-  const result = await appointmentService.updateAppointmentStatus(req.params.id, req.body, req.user);
+  const result = await appointmentService.updateAppointmentStatus(req.params.id, req.body, req.user, req);
   return new ApiResponse(200, result, 'Appointment updated').send(res);
+});
+
+/** GET /api/appointments/:id — get single appointment */
+const getAppointmentById = asyncHandler(async (req, res) => {
+  const appointment = await appointmentService.getAppointmentById(req.params.id);
+  return new ApiResponse(200, appointment, 'Appointment fetched').send(res);
 });
 
 /** DELETE /api/appointments/:id — soft-delete (Admin and Receptionist) */
@@ -32,8 +38,8 @@ const softDelete = asyncHandler(async (req, res) => {
   if (!['admin', 'receptionist'].includes(req.user?.role)) {
     throw ApiError.forbidden('Admin or Receptionist role required.');
   }
-  await appointmentService.softDeleteAppointment(req.params.id);
+  await appointmentService.softDeleteAppointment(req.params.id, req.user, req);
   return new ApiResponse(200, null, 'Appointment deleted').send(res);
 });
 
-module.exports = { getAppointments, getByPatient, bookAppointment, updateStatus, softDelete };
+module.exports = { getAppointments, getByPatient, bookAppointment, getAppointmentById, updateStatus, softDelete };

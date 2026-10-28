@@ -1,6 +1,7 @@
 const { patientDb, appointmentDb, userDb, clinicDb, treatmentCategoryDb } = require('../db')
 const { isValidUUID } = require('../utils/isValidUUID')
 const ApiError = require('../utils/ApiError')
+const auditService = require('./audit.service')
 
 function normalizeCategory(str) {
   if (!str) return 'General Consultation'
@@ -77,7 +78,7 @@ async function getPatientById(id) {
 /**
  * Register a new patient (and optionally create their first appointment).
  */
-async function createPatient(body) {
+async function createPatient(body, requestingUser = null, req = null) {
   const clinic = await clinicDb.getDefaultClinic()
 
   const {
@@ -173,6 +174,17 @@ async function createPatient(body) {
     is_deleted: false,
   })
 
+  // Audit log
+  auditService.log({
+    action: 'patient.create',
+    userId: requestingUser?.id,
+    entityType: 'patient',
+    entityId: patient.id,
+    changes: { name, phone, patient_number: patient.patient_number },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   let initialApt = null
   const aptDate = appointmentDate || new Date().toISOString().split('T')[0]
   const aptTime = appointmentTime || '10:00'
@@ -223,7 +235,7 @@ async function createPatient(body) {
         mode: pMethod,
         notes: body.paymentNotes || 'Registration Advance Payment',
         date: aptDate,
-      }, { id: validDoctorId || clinic.id })
+      }, { id: validDoctorId || clinic.id }, req)
     } catch (payErr) {
       console.error('[createPatient] Advance payment creation failed:', payErr.message)
     }
@@ -239,7 +251,7 @@ async function createPatient(body) {
 /**
  * Update editable patient fields.
  */
-async function updatePatient(id, body) {
+async function updatePatient(id, body, requestingUser = null, req = null) {
   const existing = await patientDb.findById(id)
   if (!existing) throw ApiError.notFound('Patient not found.')
 
@@ -264,6 +276,18 @@ async function updatePatient(id, body) {
   if (body.dateOfBirth !== undefined) updateFields.date_of_birth = body.dateOfBirth
 
   const updated = await patientDb.update(id, updateFields)
+
+  // Audit log
+  auditService.log({
+    action: 'patient.update',
+    userId: requestingUser?.id,
+    entityType: 'patient',
+    entityId: id,
+    changes: { before: toFrontendShape(existing), after: updateFields },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   return toFrontendShape(updated)
 }
 
@@ -271,7 +295,7 @@ async function updatePatient(id, body) {
  * Soft-delete a patient (Admin and Receptionist).
  * Also cancels and soft-deletes all associated appointments.
  */
-async function softDeletePatient(id) {
+async function softDeletePatient(id, requestingUser = null, req = null) {
   let patient = null
   if (isValidUUID(id)) {
     patient = await patientDb.findById(id)
@@ -283,6 +307,17 @@ async function softDeletePatient(id) {
   if (patient) {
     await patientDb.softDelete(patient.id)
     await appointmentDb.bulkSoftDeleteByPatient(patient.id)
+
+    // Audit log
+    auditService.log({
+      action: 'patient.delete',
+      userId: requestingUser?.id,
+      entityType: 'patient',
+      entityId: patient.id,
+      changes: { patient_number: patient.patient_number, name: patient.name },
+      ipAddress: req?.ip,
+      userAgent: req?.get('user-agent'),
+    })
   }
 }
 

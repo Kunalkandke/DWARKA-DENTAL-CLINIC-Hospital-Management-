@@ -11,8 +11,12 @@ async function startServer() {
   try {
     await connectDB();
     app.locals.databaseAvailable = true;
-    // Seed default clinic, users (bcrypt), and treatment categories
-    await seedDatabase();
+    // Seed default clinic, users (bcrypt), and treatment categories (disabled in production)
+    if (process.env.NODE_ENV !== 'production') {
+      await seedDatabase();
+    } else {
+      console.log('[Seed] Skipped in production mode');
+    }
   } catch (error) {
     app.locals.databaseAvailable = false;
     console.warn(`[Server] Starting without Supabase: ${error.message}`);

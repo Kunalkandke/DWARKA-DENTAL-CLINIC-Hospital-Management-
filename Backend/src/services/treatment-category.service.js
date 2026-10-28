@@ -1,5 +1,6 @@
 const { treatmentCategoryDb, clinicDb } = require('../db')
 const ApiError = require('../utils/ApiError')
+const auditService = require('./audit.service')
 
 /**
  * List treatment categories with optional search / filter / sort.
@@ -37,7 +38,7 @@ async function getCategories(query = {}) {
  * Create a treatment category.
  * @param {object} body  { name, code, defaultDurationMinutes, defaultFollowUpDays, isActive }
  */
-async function createCategory(body) {
+async function createCategory(body, requestingUser = null, req = null) {
   const clinic = await clinicDb.getDefaultClinic()
   const { name, code, defaultDurationMinutes, defaultFollowUpDays, isActive } = body
 
@@ -56,6 +57,17 @@ async function createCategory(body) {
     is_active: isActive !== undefined ? isActive : true,
   })
 
+  // Audit log
+  auditService.log({
+    action: 'category.create',
+    userId: requestingUser?.id,
+    entityType: 'treatment_category',
+    entityId: cat.id,
+    changes: { name, code: code.toUpperCase() },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   return toShape(cat)
 }
 
@@ -64,7 +76,7 @@ async function createCategory(body) {
  * @param {string} id   Category id
  * @param {object} body Fields to update
  */
-async function updateCategory(id, body) {
+async function updateCategory(id, body, requestingUser = null, req = null) {
   const existing = await treatmentCategoryDb.findById(id)
   if (!existing) throw ApiError.notFound('Treatment category not found.')
 
@@ -76,6 +88,18 @@ async function updateCategory(id, body) {
   if (body.isActive !== undefined) updateFields.is_active = body.isActive
 
   const cat = await treatmentCategoryDb.update(id, updateFields)
+
+  // Audit log
+  auditService.log({
+    action: 'category.update',
+    userId: requestingUser?.id,
+    entityType: 'treatment_category',
+    entityId: id,
+    changes: { before: toShape(existing), after: updateFields },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   return toShape(cat)
 }
 
@@ -84,10 +108,22 @@ async function updateCategory(id, body) {
  * @param {string}  id       Category id
  * @param {boolean} isActive New status
  */
-async function toggleActive(id, isActive) {
+async function toggleActive(id, isActive, requestingUser = null, req = null) {
   const existing = await treatmentCategoryDb.findById(id)
   if (!existing) throw ApiError.notFound('Treatment category not found.')
   const cat = await treatmentCategoryDb.toggleActive(id, isActive)
+
+  // Audit log
+  auditService.log({
+    action: 'category.toggle',
+    userId: requestingUser?.id,
+    entityType: 'treatment_category',
+    entityId: id,
+    changes: { was_active: existing.is_active, now_active: isActive },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   return toShape(cat)
 }
 

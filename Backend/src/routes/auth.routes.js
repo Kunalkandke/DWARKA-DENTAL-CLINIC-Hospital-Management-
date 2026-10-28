@@ -1,28 +1,51 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
+const rateLimit = require('express-rate-limit')
 const authController = require('../controllers/auth.controller')
 const validateRequest = require('../middleware/validateRequest')
 const asyncHandler = require('../middleware/asyncHandler')
 const { authMiddleware, requireRole } = require('../middleware/authMiddleware')
 const { userDb, clinicDb } = require('../db')
 const ApiResponse = require('../utils/ApiResponse')
+const ApiError = require('../utils/ApiError')
 
 const router = express.Router()
 
-// POST /api/auth/login — public
+// ─── Password policy ──────────────────────────────────────────────────────────
+function validatePassword(password) {
+  if (!password || password.length < 8) return 'Password must be at least 8 characters.'
+  if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.'
+  if (!/[0-9]/.test(password)) return 'Password must contain at least one digit.'
+  return null // valid
+}
+
+// ─── Rate limiter for login ───────────────────────────────────────────────────
+const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,                   // 10 attempts per window per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many login attempts from this IP. Please try again after 15 minutes.' },
+})
+
+// ─── Public: Login ────────────────────────────────────────────────────────────
 router.post(
   '/login',
+  loginRateLimiter,
   validateRequest({ email: { required: true, label: 'Email' }, password: { required: true, label: 'Password' } }),
   authController.login,
 )
 
-// GET /api/auth/me — validate token, return current user
+// ─── Public: Refresh + Logout ────────────────────────────────────────────────
+router.post('/refresh', authController.refresh)
+router.post('/logout', authController.logout)
+
+// ─── Authenticated: /me ───────────────────────────────────────────────────────
 router.get('/me', authController.me)
 
-// GET /api/auth/doctors — return list of active doctors (for dropdowns)
+// ─── Doctors list (any authenticated role — for dropdowns) ────────────────────
 router.get('/doctors', authMiddleware, asyncHandler(async (req, res) => {
   const doctors = await userDb.findDoctors({ status: 'active' })
-
   return new ApiResponse(200, doctors.map((d) => ({
     id: d.id,
     name: d.name,
@@ -32,8 +55,8 @@ router.get('/doctors', authMiddleware, asyncHandler(async (req, res) => {
   })), 'Doctors fetched').send(res)
 }))
 
-// GET /api/auth/staff — return all staff
-router.get('/staff', authMiddleware, asyncHandler(async (req, res) => {
+// ─── Staff list — Admin only ──────────────────────────────────────────────────
+router.get('/staff', authMiddleware, requireRole('admin'), asyncHandler(async (req, res) => {
   const staff = await userDb.findAllStaff()
   return new ApiResponse(200, staff.map((u) => ({
     id: u.id,
@@ -46,21 +69,23 @@ router.get('/staff', authMiddleware, asyncHandler(async (req, res) => {
   })), 'Staff fetched').send(res)
 }))
 
-// POST /api/auth/staff — create new staff/doctor with password (Admin only)
+// ─── Create staff — Admin only ────────────────────────────────────────────────
 router.post('/staff', authMiddleware, requireRole('admin'), asyncHandler(async (req, res) => {
-  const { name, email, role = 'receptionist', phone, specialization, password = 'Password@123' } = req.body
-  if (!name || !email) {
-    return res.status(400).json({ success: false, message: 'Name and Email are required.' })
-  }
+  const { name, email, role = 'receptionist', phone, specialization, password } = req.body
+  if (!name || !email) throw ApiError.badRequest('Name and Email are required.')
+
+  // Password policy — no weak defaults allowed
+  const rawPassword = (password || '').trim()
+  if (!rawPassword) throw ApiError.badRequest('Password is required for new staff accounts.')
+  const policyErr = validatePassword(rawPassword)
+  if (policyErr) throw ApiError.badRequest(policyErr)
 
   const normalizedEmail = email.toLowerCase().trim()
   const existing = await userDb.findByEmail(normalizedEmail)
-  if (existing) {
-    return res.status(400).json({ success: false, message: 'User with this email already exists.' })
-  }
+  if (existing) throw ApiError.badRequest('User with this email already exists.')
 
   const clinic = await clinicDb.getDefaultClinic()
-  const password_hash = await bcrypt.hash(password || 'Password@123', 10)
+  const password_hash = await bcrypt.hash(rawPassword, 10)
 
   const newUser = await userDb.createUser({
     clinic_id: clinic.id,
@@ -83,13 +108,11 @@ router.post('/staff', authMiddleware, requireRole('admin'), asyncHandler(async (
   }, 'Staff member created successfully').send(res)
 }))
 
-// PUT /api/auth/staff/:id — update staff/doctor member & password (Admin only)
+// ─── Update staff — Admin only ────────────────────────────────────────────────
 router.put('/staff/:id', authMiddleware, requireRole('admin'), asyncHandler(async (req, res) => {
   const { name, email, role, phone, specialization, status, password } = req.body
   const user = await userDb.findById(req.params.id)
-  if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found.' })
-  }
+  if (!user) throw ApiError.notFound('User not found.')
 
   const updateFields = {}
   if (name) updateFields.name = name.trim()
@@ -100,6 +123,8 @@ router.put('/staff/:id', authMiddleware, requireRole('admin'), asyncHandler(asyn
   if (status) updateFields.status = status
 
   if (password && password.trim().length > 0) {
+    const policyErr = validatePassword(password.trim())
+    if (policyErr) throw ApiError.badRequest(policyErr)
     updateFields.password_hash = await bcrypt.hash(password.trim(), 10)
   }
 
@@ -113,7 +138,7 @@ router.put('/staff/:id', authMiddleware, requireRole('admin'), asyncHandler(asyn
     phone: updated.phone,
     specialization: updated.specialization,
     status: updated.status,
-  }, 'Staff member details updated successfully').send(res)
+  }, 'Staff member updated successfully').send(res)
 }))
 
 module.exports = router

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, MapPin, User, Calendar, FileText, Pill, Trash2, DollarSign, PlusCircle, CreditCard, Edit3, Activity } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User, Calendar, FileText, Pill, Trash2, DollarSign, PlusCircle, CreditCard, Edit3, Activity, CalendarPlus } from 'lucide-react';
 import { StatusBadge } from '../../components/ui/Badge';
 import Avatar from '../../components/ui/Avatar';
 import { formatDate, formatCurrency, today } from '../../utils/formatters';
@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToast } from '../../app/store';
 import Modal from '../../components/ui/Modal';
 import DentalChart from '../../components/clinical/DentalChart';
+import BookAppointmentModal from '../../components/common/BookAppointmentModal';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: User },
@@ -32,6 +33,7 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
   const [records, setRecords] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [bookAptOpen, setBookAptOpen] = useState(false);
 
   // Edit Patient Profile State
   const [editPatientModalOpen, setEditPatientModalOpen] = useState(false);
@@ -229,18 +231,24 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
                 <h1 className="text-xl font-bold text-[var(--color-text)]">{patient.name}</h1>
                 <StatusBadge status={patient.status} />
               </div>
-              {currentUserRole !== 'admin' ? (
+              <div className="flex items-center gap-2">
+                {(currentUserRole === 'admin' || currentUserRole === 'receptionist') && (
+                  <button
+                    onClick={() => setBookAptOpen(true)}
+                    className="btn btn-outline btn-xs flex items-center gap-1.5 text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer font-semibold"
+                    id="book-appointment-btn"
+                  >
+                    <CalendarPlus size={13} /> Book Appointment
+                  </button>
+                )}
                 <button
                   onClick={openEditPatientModal}
                   className="btn btn-outline btn-xs flex items-center gap-1.5 text-[var(--color-primary-600)] border-[var(--color-primary-200)] hover:bg-[var(--color-primary-50)] cursor-pointer font-semibold"
+                  id="edit-patient-btn"
                 >
-                  <Edit3 size={13} /> Edit Name & Details
+                  <Edit3 size={13} /> Edit Details
                 </button>
-              ) : (
-                <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
-                  🔒 Admin View-Only
-                </span>
-              )}
+              </div>
             </div>
 
             <p className="text-sm text-[var(--color-text-muted)] mb-3 font-mono">{patient.patientId}</p>
@@ -719,6 +727,20 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Book Appointment Modal */}
+      {bookAptOpen && (
+        <BookAppointmentModal
+          patientId={patient.id}
+          patientName={patient.name}
+          onClose={() => setBookAptOpen(false)}
+          onBooked={() => {
+            setBookAptOpen(false);
+            loadPatientData();
+            dispatch(addToast({ type: 'success', title: 'Appointment Booked', message: 'Appointment has been scheduled successfully.' }));
+          }}
+        />
       )}
     </div>
   );

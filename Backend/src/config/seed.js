@@ -344,14 +344,6 @@ async function seedDatabase() {
           status: 'active',
         })
         console.log(`[Seed] User created: ${staff.email} (${staff.role})`)
-      } else {
-        const isValid = await bcrypt.compare(staff.password, existing.password_hash).catch(() => false)
-        if (!isValid) {
-          const password_hash = await bcrypt.hash(staff.password, 12)
-          await userDb.updateUser(existing.id, { password_hash })
-          existing = { ...existing, password_hash }
-          console.log(`[Seed] Password hash refreshed for: ${staff.email}`)
-        }
       }
       staffMap[staff.email] = existing
     }

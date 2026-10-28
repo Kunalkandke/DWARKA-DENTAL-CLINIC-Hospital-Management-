@@ -1,6 +1,7 @@
 const { paymentDb, invoiceDb, patientDb, clinicDb } = require('../db')
 const { isValidUUID } = require('../utils/isValidUUID')
 const ApiError = require('../utils/ApiError')
+const auditService = require('./audit.service')
 
 /** Fetch all non-deleted payments with filter/sort/pagination */
 async function getAllPayments(query = {}) {
@@ -53,7 +54,7 @@ async function getPaymentsByPatient(patientId) {
 }
 
 /** Record a new payment */
-async function addPayment(body, requestingUser) {
+async function addPayment(body, requestingUser, req = null) {
   const clinic = await clinicDb.getDefaultClinic()
   const { patientId, appointmentId, amount, mode, notes, date } = body
 
@@ -102,12 +103,34 @@ async function addPayment(body, requestingUser) {
     recorded_by_id: requestingUser ? requestingUser.id : clinic.id,
   })
 
+  // Audit log
+  auditService.log({
+    action: 'payment.create',
+    userId: requestingUser?.id,
+    entityType: 'payment',
+    entityId: payment.id,
+    changes: { amount: amountPaise, method: mode, patient_id: patientId },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
   return toFrontendShape(payment, patient.name)
 }
 
 /** Soft-delete a payment (Admin only) */
-async function softDeletePayment(id) {
+async function softDeletePayment(id, requestingUser = null, req = null) {
+  const before = await paymentDb.findById(id)
   await paymentDb.softDelete(id)
+
+  auditService.log({
+    action: 'payment.delete',
+    userId: requestingUser?.id,
+    entityType: 'payment',
+    entityId: id,
+    changes: { before: { receipt_number: before?.receipt_number, amount: before?.amount } },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
 }
 
 /** Revenue summary */

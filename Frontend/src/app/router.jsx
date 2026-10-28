@@ -1,7 +1,10 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import RootLayout from '../layout/Rootlayout';
 import DashboardLayout from '../layout/DashboardLayout';
 import ProtectedRoute from '../layout/ProctectedRoute';
+
+// Landing page
+import LandingPage from '../pages/LandingPage';
 
 // Auth
 import LoginPage from '../pages/auth/LoginPage';
@@ -21,6 +24,7 @@ import AdminNotificationsPage from '../pages/admin/NotificationsPage';
 import AdminSettingsPage from '../pages/admin/SettingsPage';
 import AdminPatientDetailPage from '../pages/admin/PatientDetailPage';
 import TreatmentCategoriesPage from '../pages/admin/TreatmentCategoriesPage';
+import AttendancePage from '../pages/admin/AttendancePage';
 
 // Doctor
 import DoctorDashboardPage from '../pages/doctor/DoctorDashboardPage';
@@ -51,7 +55,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/login" replace /> },
+      { index: true, element: <LandingPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'unauthorized', element: <UnauthorizedPage /> },
 
@@ -72,6 +76,7 @@ const router = createBrowserRouter([
           { path: 'staff', element: <AdminStaffPage /> },
           { path: 'revenue', element: <AdminRevenuePage /> },
           { path: 'reports', element: <AdminReportsPage /> },
+          { path: 'attendance', element: <AttendancePage /> },
           { path: 'notifications', element: <AdminNotificationsPage /> },
           { path: 'settings', element: <AdminSettingsPage /> },
         ],

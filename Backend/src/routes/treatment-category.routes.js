@@ -10,8 +10,8 @@ router.use(authMiddleware);
 // GET /api/categories — all authenticated roles can view
 router.get('/', categoryController.getAll);
 
-// POST /api/categories — admin, receptionist, doctor
-router.post('/', requireRole('admin', 'receptionist', 'doctor'), categoryController.create);
+// POST /api/categories — Admin only (spec: "Treatment catalog and price list — Admin Full")
+router.post('/', requireRole('admin'), categoryController.create);
 
 // PUT /api/categories/:id — admin only
 router.put('/:id', requireRole('admin'), categoryController.update);

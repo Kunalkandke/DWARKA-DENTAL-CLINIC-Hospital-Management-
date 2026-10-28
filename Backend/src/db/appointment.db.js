@@ -244,4 +244,27 @@ module.exports = {
   softDelete,
   bulkSoftDeleteByPatient,
   checkOverlap,
+  checkChairOverlap,
+}
+
+/**
+ * Check for chair overlap (another appointment using the same chair at overlapping time).
+ * Returns the conflicting appointment row if one exists, or null.
+ */
+async function checkChairOverlap(chairId, startAt, endAt) {
+  const startIso = startAt instanceof Date ? startAt.toISOString() : startAt
+  const endIso = endAt instanceof Date ? endAt.toISOString() : endAt
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, start_at, end_at, chair_id')
+    .eq('chair_id', chairId)
+    .eq('is_deleted', false)
+    .not('status', 'in', '(cancelled,completed,missed)')
+    .lt('start_at', endIso)
+    .gt('end_at', startIso)
+    .limit(1)
+
+  if (error) throw new Error(error.message)
+  return data && data.length > 0 ? data[0] : null
 }
