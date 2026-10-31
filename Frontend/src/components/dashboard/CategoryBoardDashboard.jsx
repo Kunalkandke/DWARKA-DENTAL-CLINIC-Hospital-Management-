@@ -1361,10 +1361,10 @@ export default function CategoryBoardDashboard() {
     <div className="space-y-6 animate-fade-in pb-16">
 
       {/* Top Header Bar & Primary Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Stethoscope className="text-[var(--color-primary-500)]" size={26} />
+          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Stethoscope className="text-[var(--color-primary-500)]" size={18} />
             Clinical Dashboard
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -1375,43 +1375,43 @@ export default function CategoryBoardDashboard() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => navigate(isAdmin ? '/admin/register' : '/receptionist/register')}
-            className="btn bg-[var(--color-primary-500)] hover:bg-[var(--color-primary-600)] text-white px-4 py-2.5 text-xs font-semibold flex items-center gap-2 shadow-xs rounded-xl cursor-pointer transition-colors"
+            className="btn bg-[var(--color-primary-500)] hover:bg-[var(--color-primary-600)] text-white px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 shadow-xs rounded-lg cursor-pointer transition-colors"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             Full Register Patient
           </button>
 
           <button
             onClick={() => setEmergencyModalOpen(true)}
-            className="btn bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 text-xs font-semibold flex items-center gap-2 shadow-xs rounded-xl cursor-pointer transition-colors"
+            className="btn bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 shadow-xs rounded-lg cursor-pointer transition-colors"
           >
-            <ShieldAlert size={16} />
+            <ShieldAlert size={14} />
             Emergency Visit
           </button>
 
           <button
             onClick={handleExportToExcel}
-            className="btn btn-outline border-emerald-300 text-emerald-700 hover:bg-emerald-50 px-3.5 py-2.5 text-xs font-semibold flex items-center gap-1.5 rounded-xl cursor-pointer bg-white"
+            className="btn btn-outline border-emerald-300 text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 rounded-lg cursor-pointer bg-white"
             title="Export Patient Backup Spreadsheet to Excel/CSV"
           >
-            <FileSpreadsheet size={16} className="text-emerald-600" /> Export Excel
+            <FileSpreadsheet size={14} className="text-emerald-600" /> Export Excel
           </button>
 
           <button
             onClick={handleResetToDefaults}
-            className="btn btn-outline p-2.5 text-xs border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer bg-white"
+            className="btn btn-outline p-1.5 text-xs border-slate-200 text-slate-500 hover:text-slate-800 rounded-lg cursor-pointer bg-white"
             title="Reset Data to Defaults"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={14} />
           </button>
         </div>
       </div>
 
       {/* Executive Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div
           onClick={() => handleFilterClick('ALL')}
-          className={`card p-5 bg-white border rounded-2xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
+          className={`card p-4 bg-white border rounded-xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
             statusFilter === 'ALL'
               ? 'border-[var(--color-primary-500)] ring-2 ring-[var(--color-primary-200)] bg-blue-50/20'
               : 'border-slate-200 hover:border-[var(--color-primary-400)]'
@@ -1419,20 +1419,20 @@ export default function CategoryBoardDashboard() {
           title="Click to view all patients"
         >
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Patients</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{cards.length}</p>
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Patients</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">{cards.length}</p>
             <span className={`text-[11px] font-medium mt-1 inline-block ${statusFilter === 'ALL' ? 'text-[var(--color-primary-700)] font-bold' : 'text-emerald-600'}`}>
               {statusFilter === 'ALL' ? '● Showing All Patients' : 'Active In-Treatment'}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-[var(--color-primary-500)] border border-blue-100 flex items-center justify-center">
-            <Users size={22} />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[var(--color-primary-500)] border border-blue-100 flex items-center justify-center flex-shrink-0">
+            <Users size={18} />
           </div>
         </div>
 
         <div
           onClick={() => handleFilterClick('TODAY')}
-          className={`card p-5 bg-white border rounded-2xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
+          className={`card p-4 bg-white border rounded-xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
             statusFilter === 'TODAY'
               ? 'border-amber-500 ring-2 ring-amber-300 bg-amber-50/50 shadow-sm'
               : 'border-slate-200 hover:border-amber-400'
@@ -1440,22 +1440,22 @@ export default function CategoryBoardDashboard() {
           title="Click to filter Today's Appointments"
         >
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Today's Appointments</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Today's Appointments</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">
               {todayCount}
             </p>
             <span className={`text-[11px] font-medium mt-1 inline-block ${statusFilter === 'TODAY' ? 'text-amber-800 font-bold' : 'text-amber-600'}`}>
               {statusFilter === 'TODAY' ? "● Filter Active: Today's Visits" : "Click to Filter Today's Visit"}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
-            <Clock size={22} />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center flex-shrink-0">
+            <Clock size={18} />
           </div>
         </div>
 
         <div
           onClick={() => handleFilterClick('MISSED')}
-          className={`card p-5 bg-white border rounded-2xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
+          className={`card p-4 bg-white border rounded-xl flex items-center justify-between shadow-2xs hover:shadow-md transition-all cursor-pointer ${
             statusFilter === 'MISSED'
               ? 'border-rose-500 ring-2 ring-rose-300 bg-rose-50/50 shadow-sm'
               : 'border-slate-200 hover:border-rose-400'
@@ -1463,16 +1463,16 @@ export default function CategoryBoardDashboard() {
           title="Click to filter Missed Appointments"
         >
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Missed Appointments</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Missed Appointments</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">
               {missedCount}
             </p>
             <span className={`text-[11px] font-medium mt-1 inline-block ${statusFilter === 'MISSED' ? 'text-rose-800 font-bold' : 'text-rose-600'}`}>
               {statusFilter === 'MISSED' ? "● Filter Active: Missed Visits" : "Requires Follow-up"}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
-            <AlertTriangle size={22} />
+          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle size={18} />
           </div>
         </div>
       </div>
@@ -1654,7 +1654,7 @@ export default function CategoryBoardDashboard() {
 
                   <button
                     type="button"
-                    className="btn bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                    className="btn bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <span>{isExpanded ? 'Hide Patients' : `View Patients (${categoryCards.length})`}</span>
                     {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}

@@ -3,7 +3,7 @@ const supabase = require('../config/supabase')
 async function findByPatient(patientId) {
   const { data, error } = await supabase
     .from('clinical_records')
-    .select('*')
+    .select('*, doctor:users!clinical_records_doctor_id_fkey(id, name)')
     .eq('patient_id', patientId)
     .eq('is_deleted', false)
     .order('visit_date', { ascending: false })

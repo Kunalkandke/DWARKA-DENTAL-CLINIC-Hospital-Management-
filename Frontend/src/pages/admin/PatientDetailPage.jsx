@@ -118,7 +118,7 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
         medicalHistory: editPatientForm.medicalHistory.trim(),
       };
 
-      await api.updatePatient(id, updatedData).catch(() => null);
+      await api.updatePatient(id, updatedData);
 
       setPatient(prev => ({ ...prev, ...updatedData }));
       dispatch(addToast({ type: 'success', title: 'Profile Updated', message: 'Patient details and name updated successfully.' }));
@@ -130,9 +130,8 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
     }
   }
 
-  const assignedDoctorName = appointments.length > 0
-    ? appointments.find(a => a.doctorId === patient?.assignedDoctorId)?.doctorName || '–'
-    : '–';
+  // Use patient.doctorName from the patient record directly (set by toFrontendShape via assigned_doctor JOIN)
+  const assignedDoctorName = patient?.doctorName || '–';
 
   const totalPaidSum = payments.reduce((sum, p) => sum + p.amount, 0);
 
@@ -161,12 +160,14 @@ export default function PatientDetailPage({ basePath = '/admin' }) {
       };
 
       const response = await api.addPayment(paymentData);
-      if (response.success) {
+      if (response.success || response.data) {
         dispatch(addToast({ type: 'success', title: 'Payment Saved', message: `Transaction of ${formatCurrency(payAmount)} logged successfully.` }));
         setBillingModal(false);
         const paysRes = await api.getPaymentsByPatient(id);
         const pays = Array.isArray(paysRes.data?.payments) ? paysRes.data.payments : (Array.isArray(paysRes.data) ? paysRes.data : []);
         setPayments(pays);
+      } else {
+        dispatch(addToast({ type: 'error', title: 'Payment Failed', message: response.message || 'Payment could not be saved.' }));
       }
     } catch (error) {
       dispatch(addToast({ type: 'error', title: 'Payment Save Failed', message: error.message }));

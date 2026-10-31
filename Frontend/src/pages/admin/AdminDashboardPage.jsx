@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { KPICard, Card, CardHeader, CardTitle } from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { api } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -391,7 +392,7 @@ export default function AdminDashboardPage() {
   const doctorPerf = data?.doctorPerformance || [];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="page-header">
@@ -401,11 +402,11 @@ export default function AdminDashboardPage() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {lastRefresh && (
-            <span className="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-subtle)] px-3 py-1.5 rounded-lg border border-[var(--color-border)]">
+            <span className="text-[11px] text-[var(--color-text-muted)] bg-[var(--color-bg-subtle)] px-2.5 py-1 rounded-lg border border-[var(--color-border)]">
               Updated {lastRefresh.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
-          <Button variant="outline" size="sm" onClick={() => loadData()} loading={loading}>
+          <Button variant="outline" size="xs" onClick={() => loadData()} loading={loading} className="gap-1">
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             Refresh
           </Button>
@@ -414,12 +415,12 @@ export default function AdminDashboardPage() {
 
       {/* ── Date Filter Bar ─────────────────────────────────────────────────── */}
       <div className="card p-4 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 p-1 bg-[var(--color-bg-subtle)] rounded-xl">
+        <div className="flex items-center gap-1 p-1 bg-[var(--color-bg-subtle)] rounded-lg">
           {PRESET_RANGES.map(p => (
             <button
               key={p.key}
               onClick={() => setPreset(p.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer
                 ${preset === p.key
                   ? 'bg-[var(--color-primary-600)] text-white shadow-sm'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-white/60'
@@ -473,7 +474,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ── KPI Grid ────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3">
         {loading
           ? Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="card p-4 space-y-3">
@@ -651,7 +652,7 @@ export default function AdminDashboardPage() {
               <thead>
                 <tr className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
                   {['Doctor', 'Specialization', 'Patients Seen', 'Completed Visits', 'Avg Duration'].map(h => (
-                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide whitespace-nowrap">
+                    <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
                   ))}
@@ -664,7 +665,7 @@ export default function AdminDashboardPage() {
                     className="hover:bg-[var(--color-bg-subtle)] transition-colors cursor-pointer"
                     onClick={() => navigate('/admin/doctors')}
                   >
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-full bg-[var(--color-primary-100)] flex items-center justify-center text-[10px] font-bold text-[var(--color-primary-700)] flex-shrink-0">
                           {d.doctorName?.slice(0, 2).toUpperCase()}
@@ -672,15 +673,15 @@ export default function AdminDashboardPage() {
                         <span className="font-medium text-[var(--color-text)]">{d.doctorName}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-[var(--color-text-muted)]">{d.specialization || '—'}</td>
-                    <td className="px-5 py-3.5 font-semibold text-[var(--color-text)]">{d.patientsCount.toLocaleString('en-IN')}</td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{d.specialization || '—'}</td>
+                    <td className="px-4 py-2.5 font-semibold text-[var(--color-text)]">{d.patientsCount.toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-2.5">
                       <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
                         <CheckCircle size={13} />
                         {d.completedVisits.toLocaleString('en-IN')}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-[var(--color-text-muted)]">
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                       {d.avgDurationMinutes > 0 ? `${d.avgDurationMinutes} min` : '—'}
                     </td>
                   </tr>
@@ -824,7 +825,7 @@ export default function AdminDashboardPage() {
                 <thead>
                   <tr className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
                     {['Patient', 'Patient #', 'AI Finding', 'Uploaded', 'Action'].map(h => (
-                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide whitespace-nowrap">
+                      <th key={h} className="text-left px-4 py-2.5 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide whitespace-nowrap">
                         {h}
                       </th>
                     ))}
@@ -833,11 +834,11 @@ export default function AdminDashboardPage() {
                 <tbody className="divide-y divide-[var(--color-border)]">
                   {aiReports.map(r => (
                     <tr key={r.id} className="hover:bg-[var(--color-bg-subtle)] transition-colors">
-                      <td className="px-5 py-3.5 font-medium text-[var(--color-text)]">{r.patientName}</td>
-                      <td className="px-5 py-3.5 font-mono text-xs text-[var(--color-text-muted)]">{r.patientNumber}</td>
-                      <td className="px-5 py-3.5"><AiResultChip result={r.result} /></td>
-                      <td className="px-5 py-3.5 text-[var(--color-text-muted)]">{formatDate(r.createdAt)}</td>
-                      <td className="px-5 py-3.5">
+                      <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{r.patientName}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-[var(--color-text-muted)]">{r.patientNumber}</td>
+                      <td className="px-4 py-2.5"><AiResultChip result={r.result} /></td>
+                      <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{formatDate(r.createdAt)}</td>
+                      <td className="px-4 py-2.5">
                         <Link
                           to={`/admin/patients/${r.patientId}`}
                           className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary-600)] hover:underline"
@@ -910,3 +911,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+

@@ -156,7 +156,11 @@ export const savePatientThunk = (patientData) => async (dispatch) => {
     body: JSON.stringify(patientData),
   });
   const json = await safeJson(res, 'Failed to register patient');
-  if (!res.ok) throw new Error(json.message || `Failed to register patient (${res.status}). Ensure the backend is running.`);
+  if (!res.ok) {
+    // Surface the exact backend error message to the caller
+    const msg = json.message || json.error || `Failed to register patient (${res.status}). Ensure the backend is running.`;
+    throw new Error(msg);
+  }
   dispatch(fetchPatientsList());
   dispatch(fetchAppointmentsList());
   dispatch(apiSlice.util.invalidateTags(['Patient', 'Appointment']));

@@ -343,37 +343,18 @@ export default function RegisterPatientPage() {
     };
 
     try {
-      let patientResult = null;
-      let aptResult = null;
-      let isBackendSaved = false;
+      // Call backend — errors propagate and are shown to the user
+      const response = await dispatch(savePatientThunk(newPatientData));
+      const patientResult = response?.data?.patient || response?.patient || null;
+      const aptResult = response?.data?.appointment || null;
 
-      try {
-        const response = await dispatch(savePatientThunk(newPatientData));
-        patientResult = response?.data?.patient || response?.patient || null;
-        aptResult = response?.data?.appointment || null;
-        if (patientResult) isBackendSaved = true;
-      } catch (backendErr) {
-        console.warn('Backend service offline or unreachable, registering locally:', backendErr.message);
-      }
-
-      // If backend is offline or returned an error, fallback to local patient record
       if (!patientResult) {
-        const fallbackNum = `DWK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        patientResult = {
-          id: `pat-${Date.now()}`,
-          _id: `pat-${Date.now()}`,
-          patientNumber: fallbackNum,
-          patientId: fallbackNum,
-          name: form.name,
-          phone: form.phone,
-          age: parseInt(form.age) || 30,
-          gender: form.gender,
-          email: form.email,
-          address: form.address,
-          status: 'Active',
-          createdAt: new Date().toISOString(),
-        };
+        dispatch(addToast({ type: 'error', title: 'Registration Failed', message: 'No patient record returned. Please check backend and try again.' }));
+        setLoading(false);
+        return;
       }
+
+      const isBackendSaved = true;
 
       if (patientResult) {
         const todayIso = new Date().toISOString().split('T')[0];
@@ -473,11 +454,11 @@ export default function RegisterPatientPage() {
         }
 
         dispatch(addToast({
-          type: isBackendSaved ? 'success' : 'info',
-          title: isBackendSaved ? 'Patient Registered' : 'Patient Registered (Offline Mode)',
+          type: isBackendSaved ? 'success' : 'warning',
+          title: isBackendSaved ? 'Patient Registered' : 'Saved Locally (Backend Offline)',
           message: isBackendSaved
-            ? `${form.name} (${patientResult.patientNumber || patientResult.patientId || 'New'}) registered with ₹${advanceNum.toLocaleString('en-IN')} advance.`
-            : `${form.name} (${patientResult.patientNumber || patientResult.patientId}) registered locally with ₹${advanceNum.toLocaleString('en-IN')} advance.`,
+            ? `${form.name} (${patientResult.patientNumber || patientResult.patientId || 'New'}) registered successfully.`
+            : `${form.name} saved locally — backend unreachable. Data will NOT persist after browser refresh.`,
         }));
         // Store appointment info so success screen can show right link
         const aptDate = form.appointmentDate || new Date().toISOString().split('T')[0];

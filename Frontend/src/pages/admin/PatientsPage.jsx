@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Search, Plus, Eye, Loader2, RefreshCw, Filter, LayoutGrid, List,
@@ -90,15 +90,27 @@ export default function PatientsPage() {
       .catch(() => {});
   }, []);
 
-  // Load real-data stats
+  // Load real-data stats from API — combines dashboard totals + per-status counts
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const res = await api.getDashboardStatsEnhanced({ dateFrom: '', dateTo: '' });
-      const d = res?.data || res;
+      const [dashRes, inactiveRes, followRes] = await Promise.allSettled([
+        api.getDashboardStatsEnhanced({ dateFrom: '', dateTo: '' }),
+        api.getPatients({ status: 'inactive', limit: 1 }),
+        api.getPatients({ status: 'follow_up', limit: 1 }),
+      ]);
+
+      const d = dashRes.status === 'fulfilled' ? (dashRes.value?.data || dashRes.value) : {};
+      const inactiveTot = inactiveRes.status === 'fulfilled' ? (inactiveRes.value?.data?.pagination?.total ?? 0) : 0;
+      const followTot = followRes.status === 'fulfilled' ? (followRes.value?.data?.pagination?.total ?? 0) : 0;
+      const total = d.totalPatients ?? 0;
+
       setStats({
-        total: d.totalPatients ?? 0,
+        total,
         newThisMonth: d.newPatientsInPeriod ?? 0,
+        active: Math.max(0, total - inactiveTot),
+        inactive: inactiveTot,
+        followUp: followTot,
       });
     } catch { /* silently fail */ }
     finally { setStatsLoading(false); }
@@ -244,10 +256,10 @@ export default function PatientsPage() {
   const hasActiveFilters = search || statusFilter || categoryFilter;
   const activeCategoryObj = categories.find(c => c.id === categoryFilter);
 
-  // Derive stats from patients + stats API
-  const activeCount = patients.filter(p => ['new', 'follow_up'].includes(p.status)).length;
-  const inactiveCount = patients.filter(p => p.status === 'inactive').length;
-  const upcomingCount = patients.filter(p => p.nextFollowUp && new Date(p.nextFollowUp) > new Date()).length;
+  // Use API-sourced patient status counts (accurate totals from DB)
+  const activeCount = statsLoading ? 0 : (stats?.active ?? 0);
+  const inactiveCount = statsLoading ? 0 : (stats?.inactive ?? 0);
+  const followUpCount = statsLoading ? 0 : (stats?.followUp ?? 0);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -291,7 +303,7 @@ export default function PatientsPage() {
           <button
             onClick={handleExportCSV}
             disabled={exporting}
-            className="btn btn-outline btn-sm flex items-center gap-1.5"
+            className="btn btn-secondary btn-sm flex items-center gap-1.5"
             title="Export to CSV"
           >
             {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -301,9 +313,9 @@ export default function PatientsPage() {
           {(role === 'receptionist' || role === 'admin') && (
             <Link
               to={categoryFilter ? `/receptionist/register?categoryId=${categoryFilter}` : '/receptionist/register'}
-              className="btn btn-primary btn-sm flex items-center gap-1.5"
+              className="btn btn-primary btn-sm flex items-center gap-1"
             >
-              <Plus size={15} /> Register Patient
+              <Plus size={13} /> Register Patient
             </Link>
           )}
         </div>
@@ -320,21 +332,21 @@ export default function PatientsPage() {
         />
         <StatCard
           label="Active / Follow-up"
-          value={loading ? '…' : activeCount.toLocaleString('en-IN')}
+          value={statsLoading ? '…' : activeCount.toLocaleString('en-IN')}
           icon={UserCheck}
           color="text-emerald-600"
           bg="bg-emerald-50"
         />
         <StatCard
           label="Inactive"
-          value={loading ? '…' : inactiveCount.toLocaleString('en-IN')}
+          value={statsLoading ? '…' : inactiveCount.toLocaleString('en-IN')}
           icon={UserX}
           color="text-slate-500"
           bg="bg-slate-100"
         />
         <StatCard
-          label="Upcoming Follow-ups"
-          value={loading ? '…' : upcomingCount.toLocaleString('en-IN')}
+          label="Follow-up Patients"
+          value={statsLoading ? '…' : followUpCount.toLocaleString('en-IN')}
           icon={Clock}
           color="text-violet-600"
           bg="bg-violet-50"
@@ -415,7 +427,8 @@ export default function PatientsPage() {
                 setSearchParams(val ? { categoryId: val } : {});
                 setPage(1);
               }}
-              className="text-sm border border-[var(--color-border)] rounded-lg px-3 py-2 bg-[var(--color-bg)] text-[var(--color-text)] cursor-pointer"
+              className="form-select text-sm"
+              style={{ height: '36px', width: 'auto', minWidth: '140px' }}
             >
               <option value="">All Categories</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -426,7 +439,8 @@ export default function PatientsPage() {
               id="patient-status-filter"
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="text-sm border border-[var(--color-border)] rounded-lg px-3 py-2 bg-[var(--color-bg)] text-[var(--color-text)] cursor-pointer"
+              className="form-select text-sm"
+              style={{ height: '36px', width: 'auto', minWidth: '130px' }}
             >
               {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -439,7 +453,8 @@ export default function PatientsPage() {
                 const [f, o] = e.target.value.split(':');
                 setSortBy(f); setSortOrder(o); setPage(1);
               }}
-              className="text-sm border border-[var(--color-border)] rounded-lg px-3 py-2 bg-[var(--color-bg)] text-[var(--color-text)] cursor-pointer"
+              className="form-select text-sm"
+              style={{ height: '36px', width: 'auto', minWidth: '150px' }}
             >
               {SORT_FIELDS.map(o => (
                 <>
@@ -585,14 +600,14 @@ export default function PatientsPage() {
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="btn btn-outline btn-xs"
+                    className="btn btn-secondary btn-xs"
                   >
                     ← Prev
                   </button>
                   <button
                     onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                     disabled={page >= pagination.totalPages}
-                    className="btn btn-outline btn-xs"
+                    className="btn btn-secondary btn-xs"
                   >
                     Next →
                   </button>
@@ -616,3 +631,4 @@ export default function PatientsPage() {
     </div>
   );
 }
+

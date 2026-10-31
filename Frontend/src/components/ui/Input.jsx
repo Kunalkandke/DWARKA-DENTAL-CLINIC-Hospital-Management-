@@ -7,7 +7,7 @@ const Input = forwardRef(function Input({ label, id, error, helperText, required
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-[var(--color-text)]">
+        <label htmlFor={id} className="text-xs font-semibold text-[var(--color-text)]">
           {label}
           {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
         </label>
@@ -37,7 +37,7 @@ export const Textarea = forwardRef(function Textarea({ label, id, error, helperT
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-[var(--color-text)]">
+        <label htmlFor={id} className="text-xs font-semibold text-[var(--color-text)]">
           {label}
           {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
         </label>

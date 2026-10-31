@@ -32,7 +32,7 @@ export default function DashboardLayout() {
         <Header />
         <main
           className="flex-1 overflow-auto animate-fade-in"
-          style={{ padding: '24px 28px' }}
+          style={{ padding: '20px 24px' }}
         >
           <Outlet />
         </main>

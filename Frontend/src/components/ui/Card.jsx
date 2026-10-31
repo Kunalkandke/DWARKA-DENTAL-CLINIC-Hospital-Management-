@@ -3,7 +3,7 @@
  */
 export function Card({ children, className = '', noPad = false, ...rest }) {
   return (
-    <div className={`card ${noPad ? '' : 'p-6'} ${className}`} {...rest}>
+    <div className={`card ${noPad ? '' : 'p-5'} ${className}`} {...rest}>
       {children}
     </div>
   );
@@ -54,10 +54,10 @@ export function KPICard({
       <div className="flex items-start justify-between gap-2">
         {Icon && (
           <div
-            className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}
             style={iconGradient ? { background: iconGradient } : undefined}
           >
-            <Icon size={21} className={iconColor} aria-hidden="true" />
+            <Icon size={18} className={iconColor} aria-hidden="true" />
           </div>
         )}
         {trendLabel && <div className="ml-auto">{trendLabel}</div>}
@@ -65,7 +65,7 @@ export function KPICard({
 
       {/* Value + label */}
       <div>
-        <p className="text-2xl font-bold text-[var(--color-text)] leading-none tracking-tight">
+        <p className="text-xl font-bold text-[var(--color-text)] leading-none tracking-tight">
           {value}
         </p>
         <p className="text-xs font-500 text-[var(--color-text-muted)] mt-1.5 uppercase tracking-wider">

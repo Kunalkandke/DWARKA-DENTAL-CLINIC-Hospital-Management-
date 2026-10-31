@@ -192,7 +192,7 @@ export default function DoctorDashboardPage() {
             <p className="text-white/70 text-sm mt-0.5">{todayDateStr}</p>
           </div>
         </div>
-        <button onClick={loadData} title="Refresh Dashboard" className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
+        <button onClick={loadData} title="Refresh Dashboard" className="btn btn-ghost btn-sm rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
@@ -208,7 +208,7 @@ export default function DoctorDashboardPage() {
               placeholder="Search by patient name, phone, appointment ID, treatment, or status..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 text-sm bg-[var(--color-bg-subtle)] border border-[var(--color-border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary-500)] focus:bg-white transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
+              className="w-full pl-10 pr-9 py-1.5 text-sm bg-[var(--color-bg-subtle)] border border-[var(--color-border)] rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-primary-500)] focus:bg-white transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
             />
             {searchQuery && (
               <button
@@ -293,7 +293,7 @@ export default function DoctorDashboardPage() {
       {/* Today's Schedule */}
       {(!isSearchActive || filteredToday.length > 0) && (
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border)]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-[var(--color-text)]">Today's Schedule</h2>
               {isSearchActive && (
@@ -314,7 +314,7 @@ export default function DoctorDashboardPage() {
           ) : (
             <div className="divide-y divide-[var(--color-border)]">
               {filteredToday.sort((a, b) => (a.time || '').localeCompare(b.time || '')).map(apt => (
-                <div key={apt.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--color-bg-subtle)] transition-colors">
+                <div key={apt.id} className="flex items-center gap-4 px-4 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors">
                   <div className="text-center min-w-14">
                     <p className="text-sm font-semibold text-[var(--color-primary-600)]">{apt.time || '–'}</p>
                     {apt.patientNumber && <p className="text-[10px] text-[var(--color-text-muted)] font-mono">{apt.patientNumber}</p>}
@@ -355,7 +355,7 @@ export default function DoctorDashboardPage() {
       {/* Upcoming Appointments */}
       {!loading && (!isSearchActive || filteredUpcoming.length > 0) && (
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border)]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-[var(--color-text)]">Upcoming Appointments</h2>
               {isSearchActive && (
@@ -367,7 +367,7 @@ export default function DoctorDashboardPage() {
           </div>
           <div className="divide-y divide-[var(--color-border)]">
             {filteredUpcoming.map(apt => (
-              <div key={apt.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--color-bg-subtle)]">
+              <div key={apt.id} className="flex items-center gap-4 px-4 py-3 hover:bg-[var(--color-bg-subtle)]">
                 <div className="flex-1 min-w-0">
                   <Link to={`/doctor/patients/${apt.patientId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-primary-600)] truncate block">
                     {apt.patientName}
@@ -395,7 +395,7 @@ export default function DoctorDashboardPage() {
           </div>
           <div className="divide-y divide-[var(--color-border)]">
             {filteredGlobal.map(apt => (
-              <div key={apt.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
+              <div key={apt.id} className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <Link to={`/doctor/patients/${apt.patientId}`} className="font-semibold text-[var(--color-primary-600)] hover:underline">
@@ -425,7 +425,7 @@ export default function DoctorDashboardPage() {
           </div>
           <div className="divide-y divide-[var(--color-border)]">
             {filteredStaff.map(s => (
-              <div key={s.id || s.email} className="flex items-center gap-4 px-5 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors">
+              <div key={s.id || s.email} className="flex items-center gap-4 px-4 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-[var(--color-text)]">{s.name}</p>
@@ -445,4 +445,5 @@ export default function DoctorDashboardPage() {
     </div>
   );
 }
+
 

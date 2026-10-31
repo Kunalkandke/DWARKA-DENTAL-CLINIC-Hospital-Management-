@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dwarka Dental Clinic • Admin Portal</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-surface": "#1a314d",
+            "on-primary-fixed-variant": "#005046",
+            "on-secondary-fixed-variant": "#3f4947",
+            "error-container": "#ffdad6",
+            "secondary": "#57605f",
+            "secondary-fixed": "#dbe5e3",
+            "on-primary-container": "#f4fffb",
+            "on-surface-variant": "#3d4946",
+            "surface-container": "#e6eeff",
+            "on-tertiary-fixed": "#2a1800",
+            "tertiary-fixed": "#ffddb5",
+            "surface": "#f8f9ff",
+            "on-surface": "#011c37",
+            "surface-container-high": "#dce9ff",
+            "secondary-fixed-dim": "#bfc9c7",
+            "inverse-primary": "#65dac4",
+            "on-secondary-fixed": "#141d1c",
+            "primary-container": "#008373",
+            "surface-bright": "#f8f9ff",
+            "secondary-container": "#d8e2e0",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#805200",
+            "surface-dim": "#c4dcff",
+            "on-secondary": "#ffffff",
+            "on-primary": "#ffffff",
+            "primary-fixed-dim": "#65dac4",
+            "outline": "#6d7a76",
+            "tertiary-fixed-dim": "#ffb957",
+            "inverse-on-surface": "#eaf1ff",
+            "on-tertiary-fixed-variant": "#643f00",
+            "on-secondary-container": "#5b6563",
+            "on-background": "#011c37",
+            "on-primary-fixed": "#00201b",
+            "background": "#f8f9ff",
+            "on-tertiary-container": "#fffbff",
+            "error": "#ba1a1a",
+            "surface-container-low": "#eff4ff",
+            "on-error": "#ffffff",
+            "surface-variant": "#d3e4ff",
+            "on-tertiary": "#ffffff",
+            "outline-variant": "#bcc9c5",
+            "primary": "#00685b",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#83f6e0",
+            "surface-tint": "#006b5d",
+            "surface-container-highest": "#d3e4ff",
+            "tertiary-container": "#a16800"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-xs": "0.5rem",
+            "margin": "6rem",
+            "gutter": "1.5rem",
+            "space-sm": "0.75rem",
+            "space-lg": "1.5rem",
+            "margin-mobile": "3.5rem",
+            "space-xl": "2rem",
+            "gutter-mobile": "1rem"
+          },
+          "fontFamily": {
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-xl-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+            "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-xl": ["48px", { "lineHeight": "56px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+            "label-lg": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+            "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "600" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #eff4ff;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #bcc9c5;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden font-body-md text-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- LEFT NAVIGATION SIDEBAR -->
+<aside class="w-72 bg-surface-container-lowest flex flex-col shrink-0 border-r border-outline-variant/30 h-full z-20 transition-all duration-300">
+<!-- Brand / Clinic Header -->
+<div class="h-20 px-6 flex items-center gap-3.5 border-b border-surface-container/60">
+<div class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]" data-icon="dentistry" style="font-variation-settings: 'FILL' 1;">dentistry</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm tracking-tight text-on-surface leading-tight">Dwarka Dental Clinic</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold tracking-wide">Sector 12 Admin Portal</span>
+</div>
+</div>
+<!-- Active Doctor Badge summary -->
+<div class="px-5 py-4">
+<div class="bg-surface-container-low rounded-xl p-3 flex items-center justify-between border border-surface-container">
+<div class="flex items-center gap-2.5">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Clinic Live &amp; Ready</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-sm text-label-sm shadow-sm font-semibold">4 Chairs Active</span>
+</div>
+</div>
+<!-- Main Navigation Menu -->
+<nav class="flex-1 px-3 space-y-1 overflow-y-auto custom-scroll">
+<p class="px-3 text-[11px] font-bold text-outline uppercase tracking-wider mb-2">Clinic Management</p>
+<!-- Dashboard (Active) -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-label-md text-label-md shadow-sm transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Appointments & Calendar -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<div class="flex items-center gap-3.5">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="calendar_month">calendar_month</span>
+<span>Appointments &amp; Calendar</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">38</span>
+</a>
+<!-- Patient Records (EHR) -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="clinical_notes">clinical_notes</span>
+<span>Patient Records (EHR)</span>
+</a>
+<!-- Doctor Roster & Operatories -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="badge">badge</span>
+<span>Doctor Roster &amp; Operatories</span>
+</a>
+<!-- Billing & Invoicing -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<div class="flex items-center gap-3.5">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="receipt_long">receipt_long</span>
+<span>Billing &amp; Invoicing</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+</a>
+<!-- Inventory & Autoclave Log -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="sanitizer">sanitizer</span>
+<span>Inventory &amp; Autoclave Log</span>
+</a>
+<!-- Lab Orders & Scans -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<div class="flex items-center gap-3.5">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="biotech">biotech</span>
+<span>Lab Orders &amp; Scans</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">3 New</span>
+</a>
+<!-- Analytics & Reports -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary" data-icon="monitoring">monitoring</span>
+<span>Analytics &amp; Reports</span>
+</a>
+</nav>
+<!-- Bottom Sidebar Section -->
+<div class="p-4 border-t border-surface-container/60 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span>Clinic Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help_outline">help_outline</span>
+<span>Help &amp; Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-error hover:bg-error-container/40 font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+<span>Staff Logout</span>
+</a>
+</div>
+</aside>
+<!-- MAIN CANVAS / WORKSPACE WRAPPER -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background">
+<!-- HEADER TOP BAR -->
+<header class="h-20 bg-surface-container-lowest/90 backdrop-blur-md px-8 flex items-center justify-between border-b border-surface-container/60 shrink-0 z-10">
+<!-- Left Search Input -->
+<div class="flex items-center gap-4 w-96 max-w-lg">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]" data-icon="search">search</span>
+<input class="w-full bg-surface pl-10 pr-4 py-2 text-on-surface placeholder:text-outline/70 border border-outline-variant/40 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 text-body-sm font-body-sm outline-none transition-all shadow-sm" placeholder="Search patients by UHID, name, phone, or doctor..." type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/30">⌘K</span>
+</div>
+</div>
+<!-- Center Clinic Status Pill -->
+<div class="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface-container-low border border-surface-container">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Operatory 1–4 Active • All Sterilization Verified</span>
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Today, Oct 24, 2025</span>
+</div>
+<!-- Right Action Cluster -->
+<div class="flex items-center gap-3">
+<!-- WhatsApp Alert Trigger -->
+<button class="p-2.5 rounded-xl border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all" title="Broadcast Appointment Reminder via WhatsApp">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+</button>
+<!-- Notifications Bell -->
+<button class="relative p-2.5 rounded-xl border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span>
+</button>
+<!-- + New Appointment / Patient Action CTA -->
+<button class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-4 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all duration-150 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>New Appointment</span>
+</button>
+<!-- Separator -->
+<div class="h-8 w-px bg-outline-variant/40 mx-1"></div>
+<!-- Clinic Admin Profile -->
+<div class="flex items-center gap-3 pl-1">
+<div class="w-10 h-10 rounded-full ring-2 ring-primary/20 overflow-hidden shrink-0 bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of Dr. Rajesh Sharma, experienced senior Indian dentist and clinic director wearing clean medical scrub with modern clinic background, natural warm studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1BSV35fDlQq3NwT2c5qxOaJXmtuWDsadVlr4jLbsFMAq8XRAU473DjuAR4QG8Ad_hVIVTeYEzMF3WGSHKjst_mb1NkrK89TSBrMDiA_bPMCQsxeWYLM08oYTmbQTkcn2B3qBAGraQi7WKlYogttPUw_n3Qi9HsaXW2buGKYr0HDW5Q7cz0o_EpIUFpZmx-aF8UoWODZ-kVoPzyysVnQzIFKa3e6yAgyOO7Um-Of8"/>
+</div>
+<div class="hidden xl:flex flex-col text-left">
+<span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Dr. Rajesh Sharma</span>
+<span class="text-[12px] font-label-sm text-outline font-medium">Clinic Director / Super Admin</span>
+</div>
+</div>
+</div>
+</header>
+<!-- DASHBOARD SCROLLABLE CONTENT BODY -->
+<main class="flex-1 overflow-y-auto custom-scroll p-8 space-y-8">
+<!-- TOP METRIC CARDS (KPIs) -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<!-- Metric 1: Appointments -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)] hover:shadow-[0px_8px_30px_rgba(15,157,138,0.08)] transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Today's Appointments</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="event_available">event_available</span>
+</div>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">38</span>
+<span class="inline-flex items-center gap-0.5 text-[12px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+              +12% wk
+            </span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-container flex items-center justify-between text-[13px] font-label-sm text-on-surface-variant">
+<span><strong class="text-primary font-semibold">8</strong> Done</span>
+<span><strong class="text-tertiary font-semibold">4</strong> In Chair</span>
+<span><strong class="text-on-surface font-semibold">26</strong> Up</span>
+</div>
+</div>
+<!-- Metric 2: Active Patients -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)] hover:shadow-[0px_8px_30px_rgba(15,157,138,0.08)] transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Active Patients Today</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="how_to_reg">how_to_reg</span>
+</div>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">24</span>
+<span class="inline-flex items-center gap-0.5 text-[12px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              Checked-in
+            </span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-container flex items-center justify-between text-[13px] font-label-sm text-on-surface-variant">
+<span>Registration: 100% Digital</span>
+<span class="text-primary font-medium">0 Waiting &gt; 15m</span>
+</div>
+</div>
+<!-- Metric 3: Today's Revenue -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)] hover:shadow-[0px_8px_30px_rgba(15,157,138,0.08)] transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Today's Clinic Revenue</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="currency_rupee">currency_rupee</span>
+</div>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">₹1,42,500</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-container flex items-center justify-between text-[13px] font-label-sm text-on-surface-variant">
+<span>Collected: <strong class="text-on-surface font-semibold">₹98,000</strong></span>
+<span>TPA/Ins: <strong class="text-tertiary font-semibold">₹44,500</strong></span>
+</div>
+</div>
+<!-- Metric 4: Chair Occupancy -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)] hover:shadow-[0px_8px_30px_rgba(15,157,138,0.08)] transition-all flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Chair Occupancy Rate</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="airline_seat_recline_extra">airline_seat_recline_extra</span>
+</div>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">92%</span>
+<span class="text-[12px] font-label-sm text-outline font-semibold">4 / 4 Operatories</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-container">
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden flex">
+<div class="bg-primary h-1.5" style="width: 92%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- MULTI-COLUMN MAIN DASHBOARD WORKFLOW -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT / MAIN WORKSPACE COLUMN (8 COLS) -->
+<div class="lg:col-span-8 space-y-8">
+<!-- LIVE OPERATORY & APPOINTMENT QUEUE -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)] overflow-hidden">
+<!-- Table Header Bar -->
+<div class="px-6 py-5 border-b border-surface-container/60 flex flex-wrap items-center justify-between gap-4">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Live Operatory &amp; Patient Queue</h2>
+<p class="font-body-sm text-body-sm text-outline">Real-time status of dental treatments &amp; room scheduling</p>
+</div>
+<!-- Filter tabs -->
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-xl border border-surface-container">
+<button class="px-3 py-1 text-label-sm font-label-sm rounded-lg bg-surface-container-lowest text-primary shadow-sm font-semibold">All (38)</button>
+<button class="px-3 py-1 text-label-sm font-label-sm rounded-lg text-on-surface-variant hover:text-primary transition-colors">In Chair (4)</button>
+<button class="px-3 py-1 text-label-sm font-label-sm rounded-lg text-on-surface-variant hover:text-primary transition-colors">Waiting (6)</button>
+<button class="px-3 py-1 text-label-sm font-label-sm rounded-lg text-on-surface-variant hover:text-primary transition-colors">Upcoming (28)</button>
+</div>
+</div>
+<!-- Queue Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-outline text-[12px] font-semibold uppercase tracking-wider border-b border-surface-container">
+<th class="py-3 px-6">Time / Room</th>
+<th class="py-3 px-6">Patient Details</th>
+<th class="py-3 px-6">Procedure</th>
+<th class="py-3 px-6">Specialist</th>
+<th class="py-3 px-6">Status</th>
+<th class="py-3 px-6 text-right">Quick Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container/60 font-body-sm text-body-sm">
+<!-- Row 1: In Chair -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="font-semibold text-on-surface">10:30 AM</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        Operatory 1
+                      </span>
+</td>
+<td class="py-4 px-6">
+<div class="font-semibold text-on-surface">Rohit Verma</div>
+<div class="text-[12px] text-outline font-mono">UHID-4029 • 34 M</div>
+</td>
+<td class="py-4 px-6">
+<span class="font-medium text-on-surface">Single-Sitting RCT</span>
+<div class="text-[12px] text-outline">Upper Right Molar #16</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="text-on-surface font-medium">Dr. Vikram Mehra</div>
+<div class="text-[11px] text-outline">Endodontist (MDS)</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<span class="px-2.5 py-1 rounded-full text-[12px] font-semibold bg-primary/10 text-primary border border-primary/20 inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        In Chair (25m)
+                      </span>
+</td>
+<td class="py-4 px-6 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Open Patient EHR Chart">
+<span class="material-symbols-outlined text-[18px]" data-icon="clinical_notes">clinical_notes</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="View OPG / CBCT X-Ray">
+<span class="material-symbols-outlined text-[18px]" data-icon="radiology">radiology</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Contact Patient">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: In Chair -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="font-semibold text-on-surface">11:00 AM</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        Operatory 2
+                      </span>
+</td>
+<td class="py-4 px-6">
+<div class="font-semibold text-on-surface">Pooja Chhabra</div>
+<div class="text-[12px] text-outline font-mono">UHID-8812 • 46 F</div>
+</td>
+<td class="py-4 px-6">
+<span class="font-medium text-on-surface">Implant Stage 2 Uncovering</span>
+<div class="text-[12px] text-outline">Straumann SLA #46</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="text-on-surface font-medium">Dr. Rajesh Sharma</div>
+<div class="text-[11px] text-outline">Implantologist &amp; Chief</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<span class="px-2.5 py-1 rounded-full text-[12px] font-semibold bg-primary/10 text-primary border border-primary/20 inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        In Chair (15m)
+                      </span>
+</td>
+<td class="py-4 px-6 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Open Patient EHR Chart">
+<span class="material-symbols-outlined text-[18px]" data-icon="clinical_notes">clinical_notes</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="View OPG / CBCT X-Ray">
+<span class="material-symbols-outlined text-[18px]" data-icon="radiology">radiology</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Contact Patient">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Waiting Room -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="font-semibold text-on-surface">11:15 AM</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                        Waiting Room
+                      </span>
+</td>
+<td class="py-4 px-6">
+<div class="font-semibold text-on-surface">Aarav Malhotra</div>
+<div class="text-[12px] text-outline font-mono">UHID-9304 • 8 M</div>
+</td>
+<td class="py-4 px-6">
+<span class="font-medium text-on-surface">Pediatric Pulpectomy + Crown</span>
+<div class="text-[12px] text-outline">Milk Molar #74</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="text-on-surface font-medium">Dr. Ananya Kapoor</div>
+<div class="text-[11px] text-outline">Pedodontist (MDS)</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<span class="px-2.5 py-1 rounded-full text-[12px] font-semibold bg-tertiary/10 text-tertiary border border-tertiary/20 inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                        Waiting (8m)
+                      </span>
+</td>
+<td class="py-4 px-6 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Open Patient EHR Chart">
+<span class="material-symbols-outlined text-[18px]" data-icon="clinical_notes">clinical_notes</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="View OPG / CBCT X-Ray">
+<span class="material-symbols-outlined text-[18px]" data-icon="radiology">radiology</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Contact Patient">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Scheduled / Upcoming -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="font-semibold text-on-surface">11:30 AM</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                        Operatory 3 (Next)
+                      </span>
+</td>
+<td class="py-4 px-6">
+<div class="font-semibold text-on-surface">Meenakshi Sundaram</div>
+<div class="text-[12px] text-outline font-mono">UHID-1109 • 29 F</div>
+</td>
+<td class="py-4 px-6">
+<span class="font-medium text-on-surface">Invisalign Scan &amp; Aligners #4</span>
+<div class="text-[12px] text-outline">iTero Lumina 3D Scan</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="text-on-surface font-medium">Dr. Devendra Roy</div>
+<div class="text-[11px] text-outline">Orthodontist (MDS)</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<span class="px-2.5 py-1 rounded-full text-[12px] font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/30 inline-flex items-center gap-1">
+                        Scheduled
+                      </span>
+</td>
+<td class="py-4 px-6 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Open Patient EHR Chart">
+<span class="material-symbols-outlined text-[18px]" data-icon="clinical_notes">clinical_notes</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="View OPG / CBCT X-Ray">
+<span class="material-symbols-outlined text-[18px]" data-icon="radiology">radiology</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Contact Patient">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Completed -->
+<tr class="hover:bg-surface transition-colors opacity-80">
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="font-semibold text-on-surface">09:30 AM</div>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        Operatory 3
+                      </span>
+</td>
+<td class="py-4 px-6">
+<div class="font-semibold text-on-surface">Col. S.P. Bakshi</div>
+<div class="text-[12px] text-outline font-mono">UHID-0042 • 68 M</div>
+</td>
+<td class="py-4 px-6">
+<span class="font-medium text-on-surface">Full Arch Prophylaxis &amp; Polish</span>
+<div class="text-[12px] text-outline">Periodontal Maintenance</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<div class="text-on-surface font-medium">Dr. Devendra Roy</div>
+<div class="text-[11px] text-outline">Dental Surgeon</div>
+</td>
+<td class="py-4 px-6 whitespace-nowrap">
+<span class="px-2.5 py-1 rounded-full text-[12px] font-semibold bg-surface-container text-primary font-medium inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Completed
+                      </span>
+</td>
+<td class="py-4 px-6 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Print Invoice">
+<span class="material-symbols-outlined text-[18px]" data-icon="receipt">receipt</span>
+</button>
+<button class="p-1.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Post-Op Instructions Sent">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="mark_chat_read">mark_chat_read</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer summary pagination -->
+<div class="px-6 py-3.5 bg-surface border-t border-surface-container/60 flex items-center justify-between text-[13px] font-label-sm text-outline">
+<span>Showing 5 of 38 appointments for today</span>
+<a class="text-primary hover:underline font-semibold flex items-center gap-1" href="#">
+                View complete schedule
+                <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- REVENUE & INFLOW ANALYTICS SIMULATION -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)]">
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Weekly Revenue &amp; Department Volume</h3>
+<p class="font-body-sm text-body-sm text-outline">Performance distribution across Delhi NCR treatment categories</p>
+</div>
+<!-- Timeframe picker -->
+<div class="flex items-center gap-2">
+<span class="text-[12px] font-medium text-outline">Compare:</span>
+<select class="bg-surface border border-outline-variant/40 rounded-xl px-3 py-1.5 text-body-sm font-label-sm text-on-surface outline-none focus:border-primary">
+<option>Last 7 Days (Oct 18 - 24)</option>
+<option>Current Month (October)</option>
+<option>Q3 FY 2025</option>
+</select>
+</div>
+</div>
+<!-- Chart Bars Representation (Bento style metrics) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="p-4 rounded-xl bg-surface-container-low border border-surface-container">
+<span class="text-[12px] font-medium text-outline block">Dental Implants</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1 block">₹4,80,000</span>
+<span class="text-[11px] font-semibold text-primary inline-flex items-center mt-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="north_east">north_east</span> +18.4% volume
+                </span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-surface-container">
+<span class="text-[12px] font-medium text-outline block">RCT &amp; Micro-Endo</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1 block">₹2,45,000</span>
+<span class="text-[11px] font-semibold text-primary inline-flex items-center mt-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="north_east">north_east</span> 42 procedures
+                </span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-surface-container">
+<span class="text-[12px] font-medium text-outline block">Invisalign &amp; Braces</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1 block">₹3,90,000</span>
+<span class="text-[11px] font-semibold text-primary inline-flex items-center mt-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="north_east">north_east</span> 8 new starts
+                </span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-surface-container">
+<span class="text-[12px] font-medium text-outline block">General &amp; Hygiene</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1 block">₹1,12,000</span>
+<span class="text-[11px] font-semibold text-outline inline-flex items-center mt-2">
+                  Stable (65 visits)
+                </span>
+</div>
+</div>
+<!-- Visual Bar Graph Bars Simulation -->
+<div class="space-y-3 pt-2">
+<div class="space-y-1.5">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="font-medium text-on-surface">Monday</span>
+<span class="text-outline">₹1,85,000 (34 patients)</span>
+</div>
+<div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 78%"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="font-medium text-on-surface">Tuesday</span>
+<span class="text-outline">₹1,40,000 (29 patients)</span>
+</div>
+<div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 62%"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="font-medium text-on-surface">Wednesday</span>
+<span class="text-outline">₹2,10,000 (41 patients)</span>
+</div>
+<div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 90%"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="font-medium text-on-surface">Thursday (Today)</span>
+<span class="text-primary font-semibold">₹1,42,500 (38 booked • Projected ₹1.85L)</span>
+</div>
+<div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 68%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT SIDEBAR COLUMN: OPERATORIES, TASKS & ROSTER (4 COLS) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- OPERATORY LIVE MONITOR CARD -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)]">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]" data-icon="meeting_room">meeting_room</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Operatory Live Status</h3>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+</div>
+<div class="space-y-3.5">
+<!-- Chair 1 -->
+<div class="p-3.5 rounded-xl border border-outline-variant/30 bg-surface flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                    Operatory 1 • Chair 1
+                  </span>
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary/10 text-primary">In Use (25m)</span>
+</div>
+<div class="text-[13px] text-on-surface-variant">Dr. Vikram Mehra — RCT in progress</div>
+<div class="text-[11px] text-outline">Patient: Rohit Verma • Sterilization: Cycle #102 verified</div>
+</div>
+<!-- Chair 2 -->
+<div class="p-3.5 rounded-xl border border-outline-variant/30 bg-surface flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                    Operatory 2 • Surgical Chair
+                  </span>
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary/10 text-primary">In Use (15m)</span>
+</div>
+<div class="text-[13px] text-on-surface-variant">Dr. Rajesh Sharma — Implant Uncovering</div>
+<div class="text-[11px] text-outline">Patient: Pooja Chhabra • Surgical Kit Sterile</div>
+</div>
+<!-- Chair 3 -->
+<div class="p-3.5 rounded-xl border border-outline-variant/30 bg-surface flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                    Operatory 3 • Hygiene Suite
+                  </span>
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-tertiary/10 text-tertiary">Sanitizing (5m)</span>
+</div>
+<div class="text-[13px] text-on-surface-variant">Chair turn-over &amp; air disinfection active</div>
+<div class="text-[11px] text-outline">Next: Meenakshi S. (Invisalign Scan @ 11:30)</div>
+</div>
+<!-- Chair 4 -->
+<div class="p-3.5 rounded-xl border border-outline-variant/30 bg-surface flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                    Operatory 4 • Pediatric &amp; Ortho
+                  </span>
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary/10 text-primary">Ready for Patient</span>
+</div>
+<div class="text-[13px] text-on-surface-variant">Dr. Ananya Kapoor — Calling Aarav M.</div>
+<div class="text-[11px] text-outline">Nitrous Oxide unit primed &amp; safety checked</div>
+</div>
+</div>
+</div>
+<!-- CRITICAL CLINICAL ALERTS & TASKS -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)]">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Urgent Admin Tasks</h3>
+<span class="px-2 py-0.5 bg-error-container text-error text-[11px] font-bold rounded-full">3 Action Items</span>
+</div>
+<div class="space-y-3">
+<!-- Alert Item 1: Autoclave -->
+<div class="p-3 rounded-xl bg-surface-container-low border-l-4 border-error flex items-start gap-3">
+<span class="material-symbols-outlined text-error text-[20px] shrink-0 mt-0.5" data-icon="warning">warning</span>
+<div class="flex-1">
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">Class-B Autoclave Batch #104</div>
+<p class="text-[12px] text-outline mt-0.5">Biological indicator spore strip cleared. Dr. Sharma signature required for log record.</p>
+<button class="mt-2 text-[12px] font-semibold text-primary hover:underline flex items-center gap-1">
+                    Sign Sterilization Log
+                    <span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Alert Item 2: Lab Orders -->
+<div class="p-3 rounded-xl bg-surface-container-low border-l-4 border-primary flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5" data-icon="local_shipping">local_shipping</span>
+<div class="flex-1">
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">Lab Delivery Arrived</div>
+<p class="text-[12px] text-outline mt-0.5">3 Zirconia Crowns received from Sector 18 Dental Craft Lab for tomorrow's patients.</p>
+<button class="mt-2 text-[12px] font-semibold text-primary hover:underline flex items-center gap-1">
+                    Confirm QC &amp; Receive
+                    <span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Alert Item 3: Insurance -->
+<div class="p-3 rounded-xl bg-surface-container-low border-l-4 border-tertiary flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-[20px] shrink-0 mt-0.5" data-icon="policy">policy</span>
+<div class="flex-1">
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">2 TPA Claims Pending Approval</div>
+<p class="text-[12px] text-outline mt-0.5">Bajaj Allianz cashless pre-auth request for Mr. Kapil (UHID-7102) requires intra-oral photos.</p>
+<button class="mt-2 text-[12px] font-semibold text-tertiary hover:underline flex items-center gap-1">
+                    Upload Pre-Auth Docs
+                    <span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- DOCTORS ON-DUTY ROSTER -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 shadow-[0px_4px_20px_rgba(11,37,64,0.04)]">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Doctors on Shift Today</h3>
+<span class="text-[12px] font-label-sm text-primary font-semibold">Shift: 09:00 - 18:00</span>
+</div>
+<div class="divide-y divide-surface-container">
+<!-- Doctor 1 -->
+<div class="py-3 flex items-center justify-between first:pt-0 last:pb-0">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Dr. Vikram Mehra, endodontist wearing surgical dental loupes and serene smile in a clean modern clinic with teal lighting accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaFxdOBenINxkeHTyFgU26WJR58IgienqSIlPooGbvxO5FyZ2nCXjpenykqPVMlKhl0mnbT1BV_VDitEqsjJCIBgJ3LYWpxr7l9NsrH116OdloLVuxvmair1IkI_R6sCOlrIqCjCWlgsnK7-ipdw9Ab1dE28k-DOMDpptdUR6xhgGmN8NrxGD-eQfNEA3Gfks_lxWSGRs33yakblDB-N6dQLQWrNXbFoSznKkHs_0"/>
+</div>
+<div>
+<span class="text-label-md font-label-md font-semibold text-on-surface block leading-tight">Dr. Vikram Mehra</span>
+<span class="text-[11px] text-outline">Endodontics (MDS)</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[12px] font-bold text-primary">11 Patients</span>
+<span class="text-[10px] text-outline block">4 Completed</span>
+</div>
+</div>
+<!-- Doctor 2 -->
+<div class="py-3 flex items-center justify-between first:pt-0 last:pb-0">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Dr. Rajesh Sharma, senior dental implantologist and clinic director in white coat inside modern Delhi clinical surgery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKROeJna-jh4tgVC2YdbU6yFpR95GvXfgE4nnwFALuMzhHV0qdKkRcq7yr3t43U-VXOvp6m1KxVvzQB_HYLxciENT8AAOJ1atesnjEZo0IZKRTR6lHvnhpbDZvmHbOZFb74FhikJOv6R8K61yX566qRqcWmojv-8cxSUFXDpfNV9TTUJ7xZ_8ujkGOKETezKd5QYSSdqXb6MB0ElSgqn7yhLKt_cNRHRttiOi_oAE"/>
+</div>
+<div>
+<span class="text-label-md font-label-md font-semibold text-on-surface block leading-tight">Dr. Rajesh Sharma</span>
+<span class="text-[11px] text-outline">Implantology &amp; Surgery</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[12px] font-bold text-primary">8 Patients</span>
+<span class="text-[10px] text-outline block">2 Surgeries</span>
+</div>
+</div>
+<!-- Doctor 3 -->
+<div class="py-3 flex items-center justify-between first:pt-0 last:pb-0">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Dr. Ananya Kapoor, friendly female pediatric dentist in clean clinical uniform smiling in a tranquil pediatric dentistry room." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbNrdaGqMfbOmim0D6BWG6qBRAZGYxYRkfVCBeOjQ8WfjoIWU1ucxzqh2exe4uQCj83J11QAOxG3oq4qzSqeHxXIJGwQWiOc9H-e2aeQzrZKcpunLMQhBTUHyBOOTdcYnM-ZvPoUNtZQZSSXTD90CtlUkVRm39iQNzzlf6Ux35MJOaRr70cTSopV5TEN0dw_y4Fr_TVZBjN5Tz1wQs5Vn10BX-Fl2p6Uy6hBSG6bE"/>
+</div>
+<div>
+<span class="text-label-md font-label-md font-semibold text-on-surface block leading-tight">Dr. Ananya Kapoor</span>
+<span class="text-[11px] text-outline">Pediatric Dentistry</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[12px] font-bold text-primary">9 Patients</span>
+<span class="text-[10px] text-outline block">Next in 5m</span>
+</div>
+</div>
+<!-- Doctor 4 -->
+<div class="py-3 flex items-center justify-between first:pt-0 last:pb-0">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Dr. Devendra Roy, experienced orthodontist specialist in contemporary medical setting with soft teal lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIG1PfTCoVjZ9Xeo9qZ_q7ZGmcEl1_Q4_5Lgzeocer3aEdVVlKOfE4B6Cys71cDZOdD1mtC5Ab0_TvX-M2yVqggT-PZnEP8395YsGGdcf2hrJGgiujfXeg5qtW74VNk0Ep_nNHk12UTdov2lxo8R5gluyTlBEB7hvQvCSfHl4i6Vx6Tk_Wk8BRJobrgy_BwhPUHOE-cZKUjDEwci_3PC3YsVmYm3mfgOv3_kEu1hY"/>
+</div>
+<div>
+<span class="text-label-md font-label-md font-semibold text-on-surface block leading-tight">Dr. Devendra Roy</span>
+<span class="text-[11px] text-outline">Orthodontics &amp; Aligners</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[12px] font-bold text-primary">10 Patients</span>
+<span class="text-[10px] text-outline block">1 Scan Done</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-container text-center">
+<button class="text-label-sm font-label-sm text-primary hover:underline font-semibold flex items-center justify-center gap-1 mx-auto">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit_calendar">edit_calendar</span>
+                Manage Shift Rosters &amp; Substitutes
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- FOOTER STRIP -->
+<footer class="pt-6 pb-2 border-t border-surface-container/60 flex flex-col md:flex-row items-center justify-between gap-4 text-body-sm font-body-sm text-outline">
+<div>
+<span>© 2025 Dwarka Dental Clinic. Sector 12, Dwarka, New Delhi. All rights reserved.</span>
+</div>
+<div class="flex items-center gap-6 text-[13px] font-label-sm">
+<a class="hover:text-primary transition-colors" href="#">Dental Emergency Helpline</a>
+<a class="hover:text-primary transition-colors" href="#">Sterilization Protocols</a>
+<a class="hover:text-primary transition-colors" href="#">Staff Portal</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

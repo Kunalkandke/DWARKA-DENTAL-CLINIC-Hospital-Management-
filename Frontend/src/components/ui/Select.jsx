@@ -7,7 +7,7 @@ const Select = forwardRef(function Select({ label, id, error, helperText, requir
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-[var(--color-text)]">
+        <label htmlFor={id} className="text-xs font-semibold text-[var(--color-text)]">
           {label}
           {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
         </label>

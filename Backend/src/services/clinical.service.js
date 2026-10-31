@@ -3,18 +3,35 @@ const ApiError = require('../utils/ApiError')
 const auditService = require('./audit.service')
 
 /**
- * Fetch clinical records for a patient, sorted newest-first.
- * @param {string} patientId  UUID string
+ * Map a raw DB clinical record row to camelCase frontend shape.
  */
+function toClinicalFrontendShape(r) {
+  const doctor = r.doctor && typeof r.doctor === 'object' ? r.doctor : null
+  return {
+    id: r.id,
+    patientId: r.patient_id,
+    appointmentId: r.appointment_id || null,
+    doctorId: r.doctor_id,
+    doctorName: doctor ? doctor.name : null,
+    visitDate: r.visit_date,
+    chiefComplaint: r.chief_complaint || '',
+    diagnosis: r.diagnosis || '',
+    treatment: r.treatment || '',
+    clinicalNotes: r.clinical_notes || '',
+    followUpDate: r.follow_up_date || null,
+    followUpInstructions: r.follow_up_instructions || '',
+    dentalChart: Array.isArray(r.dental_chart) ? r.dental_chart : [],
+    status: r.status || 'completed',
+    isDeleted: r.is_deleted,
+    createdAt: r.created_at,
+    // prescription field was dropped — return [] for backward compatibility
+    prescription: [],
+  }
+}
+
 async function getClinicalRecordsByPatient(patientId) {
   const records = await clinicalRecordDb.findByPatient(patientId)
-
-  return records.map((r) => ({
-    ...r,
-    id: r.id,
-    // prescription field was dropped from clinical_records table — return [] for backward compatibility
-    prescription: [],
-  }))
+  return records.map(toClinicalFrontendShape)
 }
 
 /**
@@ -84,8 +101,7 @@ async function addClinicalRecord(body, requestingUser = null, req = null) {
   }
 
   return {
-    ...record,
-    id: record.id,
+    ...toClinicalFrontendShape(record),
     // Return prescription array for backward compatibility
     prescription: prescription || [],
   }

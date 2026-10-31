@@ -141,7 +141,7 @@ export default function SidebarNav({ collapsed }) {
 
                   {/* Label */}
                   {!collapsed && (
-                    <span className="flex-1 truncate text-sm">{label}</span>
+                    <span className="flex-1 truncate text-[0.8125rem]">{label}</span>
                   )}
 
                   {/* Chevron — shows on hover */}

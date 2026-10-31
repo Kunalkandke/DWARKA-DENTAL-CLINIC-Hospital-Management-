@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '../../../app/store';
 import { useAuth } from '../../../hooks/useAuth';
-import { LogOut, ChevronLeft, ChevronRight, Tooth } from 'lucide-react';
+import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import SidebarNav from './SidebarNav';
 import Avatar from '../../ui/Avatar';
 
@@ -48,7 +48,7 @@ export default function Sidebar() {
           {/* Brand text */}
           {!sidebarCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white truncate leading-tight tracking-tight">
+              <p className="text-sm font-bold text-white truncate leading-tight tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 Dwarka Dental
               </p>
               <p className="text-[10px] text-blue-300/70 truncate font-medium tracking-wide uppercase">

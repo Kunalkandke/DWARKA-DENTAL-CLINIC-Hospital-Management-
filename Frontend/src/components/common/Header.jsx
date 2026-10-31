@@ -49,7 +49,7 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-20 h-[60px] flex items-center gap-4 px-6"
+      className="sticky top-0 z-20 h-[52px] flex items-center gap-3 px-5"
       style={{
         background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(12px)',
@@ -131,13 +131,13 @@ export default function Header() {
         <button
           id="notifications-toggle"
           onClick={() => setNotifOpen(v => !v)}
-          className="relative w-9 h-9 flex items-center justify-center rounded-xl text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+          className="btn btn-ghost btn-sm relative w-8 h-8 rounded-lg"
           style={{ border: '1.5px solid var(--color-border)' }}
           aria-label={`Notifications${unreadCount > 0 ? ` — ${unreadCount} unread` : ''}`}
           aria-expanded={notifOpen}
           aria-controls="notifications-panel"
         >
-          <Bell size={17} />
+          <Bell size={15} />
           {unreadCount > 0 && (
             <span
               className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center text-white text-[9px] font-bold rounded-full"

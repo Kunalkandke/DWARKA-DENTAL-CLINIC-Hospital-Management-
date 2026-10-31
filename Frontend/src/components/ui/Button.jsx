@@ -2,7 +2,7 @@ import { Loader2 } from 'lucide-react';
 
 /**
  * Button component — premium solid variants, never transparent.
- * @param {'primary'|'secondary'|'danger'|'ghost'|'outline'|'success'} variant
+ * @param {'primary'|'secondary'|'danger'|'ghost'|'outline'|'success'|'teal'} variant
  * @param {'xs'|'sm'|'md'|'lg'} size
  * @param {boolean} loading
  * @param {boolean} disabled
@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 export default function Button({
   children,
   variant = 'primary',
-  size = 'md',
+  size = 'sm',
   loading = false,
   disabled = false,
   onClick,
@@ -23,7 +23,7 @@ export default function Button({
     sm: 'btn-sm',
     md: 'btn-md',
     lg: 'btn-lg',
-  }[size] || 'btn-md';
+  }[size] || 'btn-sm';
 
   const variantClass = {
     primary:   'btn-primary',
@@ -32,6 +32,7 @@ export default function Button({
     ghost:     'btn-ghost',
     outline:   'btn-outline',
     success:   'btn-success',
+    teal:      'btn-teal',
   }[variant] || 'btn-primary';
 
   const isDisabled = disabled || loading;
