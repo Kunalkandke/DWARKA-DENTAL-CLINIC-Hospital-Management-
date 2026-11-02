@@ -87,6 +87,11 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 # image is considered strongly coloured and likely not a grayscale X-ray.
 COLOUR_THRESHOLD = 20.0
 
+# If True, the annotatedImage base64 field is included in the response.
+# Set RETURN_ANNOTATED_IMAGE=false in production to keep response size small
+# and avoid proxy timeouts (the Node backend saves it to disk anyway).
+RETURN_ANNOTATED_IMAGE: bool = os.environ.get("RETURN_ANNOTATED_IMAGE", "true").lower() != "false"
+
 # ---------------------------------------------------------------------------
 # Model loading (once at startup)
 # ---------------------------------------------------------------------------
@@ -290,7 +295,9 @@ def _run_prediction(img: np.ndarray) -> dict:
         "findings": findings,
         "imageWidth": width,
         "imageHeight": height,
-        "annotatedImage": annotated_b64,
+        # Only include the heavy base64 field when explicitly enabled.
+        # Set RETURN_ANNOTATED_IMAGE=false in production to avoid proxy timeouts.
+        "annotatedImage": annotated_b64 if RETURN_ANNOTATED_IMAGE else None,
         "disclaimer": DISCLAIMER,
     }
 
