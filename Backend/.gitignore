@@ -1,0 +1,7 @@
+node_modules
+.env
+
+# uploaded X-ray images and annotated output — never commit user data
+uploads/
+# keep the folder itself tracked
+!uploads/.gitkeep

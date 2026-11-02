@@ -1,0 +1,33 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+ml-service/venv/
+ml-service/__pycache__/
+ml-service/*.pyc
+ml-service/*.pyo
+ml-service/.env
+
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+Backend/node_modules/
+Frontend/node_modules/
+
+# ── Build output ──────────────────────────────────────────────────────────────
+Frontend/dist/
+Frontend/.vercel/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+Backend/.env
+Frontend/.env
+ml-service/.env
+
+# ── Uploads (user data — never commit) ───────────────────────────────────────
+Backend/uploads/*
+!Backend/uploads/.gitkeep
+
+# ── Worktrees ─────────────────────────────────────────────────────────────────
+.worktrees/
+
+# ── OS noise ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

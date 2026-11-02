@@ -1,0 +1,9 @@
+# Python 3.10, 3.11, or 3.12 required.
+# Python 3.13+ is NOT yet supported by numpy/ultralytics wheel builds.
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+ultralytics>=8.3.0
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+pydantic==2.7.4

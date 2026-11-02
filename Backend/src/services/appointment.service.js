@@ -1,0 +1,445 @@
+const { appointmentDb, patientDb, userDb, clinicDb, treatmentCategoryDb, doctorAvailabilityDb, clinicHolidayDb, doctorBlockDb, chairDb } = require('../db')
+const { isValidUUID } = require('../utils/isValidUUID')
+const ApiError = require('../utils/ApiError')
+const { calculateNextAppointmentDate } = require('../utils/scheduler')
+const auditService = require('./audit.service')
+
+/**
+ * Fetch appointments with filter / sort / pagination.
+ * @param {object} query  { view, status, doctorId, categoryId, date, dateFrom, dateTo,
+ *                          priority, sortBy, sortOrder, page, limit }
+ * view: 'today' | 'missed' | 'upcoming' | 'all'
+ */
+async function getAllAppointments(query = {}) {
+  const {
+    view,
+    status,
+    doctorId,
+    categoryId,
+    date,
+    dateFrom,
+    dateTo,
+    priority,
+    sortBy = 'startAt',
+    sortOrder = 'asc',
+    page = 1,
+    limit = 200,
+  } = query
+
+  const dbQuery = {
+    view,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+  }
+
+  if (status && status !== 'all' && status !== 'ALL') dbQuery.status = status
+  if (priority && priority !== 'all' && priority !== 'ALL') dbQuery.priority = priority
+  if (doctorId && isValidUUID(doctorId)) dbQuery.doctor_id = doctorId
+  if (categoryId && categoryId !== 'all' && categoryId !== 'ALL') {
+    if (isValidUUID(categoryId)) {
+      dbQuery.treatment_category_id = categoryId
+    }
+  }
+  if (date) dbQuery.date = date
+  if (dateFrom) dbQuery.date_from = dateFrom
+  if (dateTo) dbQuery.date_to = dateTo
+
+  const { data, total } = await appointmentDb.findAll(dbQuery)
+
+  const pageNum = Math.max(1, parseInt(page))
+  const parsedLimit = limit === 'all' ? 1000 : parseInt(limit || 200)
+  const pageLimit = Math.min(1000, Math.max(1, isNaN(parsedLimit) ? 200 : parsedLimit))
+
+  return {
+    data: data.map(toFrontendShape),
+    pagination: {
+      page: pageNum,
+      limit: pageLimit,
+      total: data.length,
+      totalPages: Math.ceil(data.length / pageLimit),
+    },
+  }
+}
+
+/**
+ * Book a new appointment with conflict detection.
+ */
+async function bookAppointment(body, requestingUser, req = null) {
+  const clinic = await clinicDb.getDefaultClinic()
+  const {
+    patientId, doctorId, date, time, notes, isEmergency,
+    treatmentCategoryId, priority = 'normal',
+  } = body
+
+  const patient = await patientDb.findById(patientId)
+  if (!patient || patient.is_deleted) throw ApiError.notFound('Patient not found.')
+
+  const doctor = await userDb.findById(doctorId)
+  if (!doctor || doctor.role !== 'doctor') throw ApiError.notFound('Doctor not found.')
+
+  // Lookup treatment category for duration
+  let durationMinutes = 30
+  let validCatId
+  if (treatmentCategoryId && isValidUUID(treatmentCategoryId)) {
+    const cat = await treatmentCategoryDb.findById(treatmentCategoryId)
+    if (cat) {
+      durationMinutes = cat.default_duration_minutes || 30
+      validCatId = cat.id
+    }
+  }
+
+  const aptDate = isEmergency ? new Date().toISOString().split('T')[0] : date
+  const startAt = new Date(`${aptDate}T${time}`)
+  const endAt = new Date(startAt.getTime() + durationMinutes * 60 * 1000)
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONFLICT DETECTION (5 checks — skip all if emergency)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const conflictReasons = []
+
+  if (!isEmergency) {
+    // 1. Doctor already has overlapping appointment
+    const conflict = await appointmentDb.checkOverlap(doctor.id, startAt, endAt)
+    if (conflict) {
+      throw ApiError.badRequest(
+        `Doctor already has an appointment at this time (${new Date(conflict.start_at).toTimeString().slice(0, 5)}). Please choose a different time.`
+      )
+    }
+
+    // 2. Check doctor availability (working hours for this day)
+    const dayOfWeek = startAt.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() // 'monday', 'tuesday', etc.
+    const availabilitySlots = await doctorAvailabilityDb.findActiveForDoctorOnDate(doctor.id, dayOfWeek)
+    
+    if (availabilitySlots.length > 0) {
+      const aptStartTime = startAt.toTimeString().slice(0, 5) // "10:00"
+      const aptEndTime = endAt.toTimeString().slice(0, 5)     // "10:30"
+      
+      const isWithinHours = availabilitySlots.some(slot => {
+        return aptStartTime >= slot.start_time && aptEndTime <= slot.end_time
+      })
+      
+      if (!isWithinHours) {
+        conflictReasons.push(`Doctor not available at this time on ${dayOfWeek}s`)
+      }
+    }
+
+    // 3. Check clinic holidays
+    const holiday = await clinicHolidayDb.findForDate(clinic.id, aptDate)
+    if (holiday) {
+      conflictReasons.push(`Clinic closed on ${aptDate} (${holiday.reason})`)
+    }
+
+    // 4. Check doctor blocks (leave/vacation)
+    const block = await doctorBlockDb.findActiveOverlap(doctor.id, startAt, endAt)
+    if (block) {
+      const blockEndDate = new Date(block.end_at).toISOString().split('T')[0]
+      conflictReasons.push(`Doctor unavailable (${block.reason || block.block_type} until ${blockEndDate})`)
+    }
+
+    // 5. Check chair overlap (if chair_id provided)
+    if (body.chairId && isValidUUID(body.chairId)) {
+      const chair = await chairDb.findById(body.chairId)
+      if (!chair || !chair.is_active) {
+        conflictReasons.push('Selected chair is not available')
+      } else {
+        const chairConflict = await appointmentDb.checkChairOverlap(body.chairId, startAt, endAt)
+        if (chairConflict) {
+          conflictReasons.push(`Chair "${chair.name}" already occupied at this time`)
+        }
+      }
+    }
+
+    // Throw combined error if any conflicts found
+    if (conflictReasons.length > 0) {
+      throw ApiError.badRequest(`Cannot book appointment: ${conflictReasons.join('; ')}`)
+    }
+  } else {
+    // Emergency appointment — log bypassed conflicts
+    const holiday = await clinicHolidayDb.findForDate(clinic.id, aptDate).catch(() => null)
+    const block = await doctorBlockDb.findActiveOverlap(doctor.id, startAt, endAt).catch(() => null)
+    if (holiday) conflictReasons.push(`Clinic holiday (${holiday.reason})`)
+    if (block) conflictReasons.push(`Doctor ${block.block_type}`)
+    if (conflictReasons.length > 0) {
+      console.log(`[EMERGENCY OVERRIDE] Booking despite: ${conflictReasons.join('; ')}`)
+    }
+  }
+
+  const aptPriority = isEmergency ? 'emergency' : priority
+  const aptStatus = isEmergency ? 'confirmed' : 'scheduled'
+  const aptNotes = isEmergency ? `[EMERGENCY] ${notes || ''}` : (notes || '')
+
+  // Build appointment payload
+  const appointmentPayload = {
+    clinic_id: clinic.id,
+    patient_id: patient.id,
+    doctor_id: doctor.id,
+    treatment_category_id: validCatId || null,
+    start_at: startAt.toISOString(),
+    end_at: endAt.toISOString(),
+    duration_minutes: durationMinutes,
+    status: aptStatus,
+    priority: aptPriority,
+    notes: aptNotes,
+    created_by_id: requestingUser ? requestingUser.id : doctor.id,
+  }
+
+  // Add chair_id if provided and valid
+  if (body.chairId && isValidUUID(body.chairId)) {
+    appointmentPayload.chair_id = body.chairId
+  }
+
+  // appointment_number is auto-generated by sequence — do NOT pass it
+  const appointment = await appointmentDb.create(appointmentPayload)
+
+  // Audit log
+  auditService.log({
+    action: 'appointment.book',
+    userId: requestingUser?.id,
+    entityType: 'appointment',
+    entityId: appointment.id,
+    changes: { appointment_number: appointment.appointment_number, patient_id: patientId, doctor_id: doctorId, start_at: startAt },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+
+  // Update patient's assigned doctor
+  if (!patient.assigned_doctor_id || patient.assigned_doctor_id !== doctor.id) {
+    await patientDb.update(patient.id, { assigned_doctor_id: doctor.id })
+  }
+
+  // Fetch with JOINs for response shape
+  const populated = await appointmentDb.findById(appointment.id)
+  return toFrontendShape(populated)
+}
+
+/**
+ * Update appointment status.
+ * Handles: arrived, completed (auto follow-up), missed, cancelled, rescheduled
+ * The status update is the PRIMARY action — secondary operations (patient stats,
+ * follow-up creation) are wrapped in try/catch so they never fail the main update.
+ */
+async function updateAppointmentStatus(id, body, requestingUser, req = null) {
+  const { status, nextDate, nextTime, notes } = body
+
+  const appointment = await appointmentDb.findById(id)
+  if (!appointment || appointment.is_deleted) throw ApiError.notFound('Appointment not found.')
+
+  const oldStatus = appointment.status
+  let followUpApt = null
+
+  // ── PRIMARY: Update the appointment status first ──────────────────────────
+  if (status === 'arrived' && oldStatus !== 'arrived') {
+    const updateFields = { status, arrived_at: new Date().toISOString() }
+    if (notes !== undefined) updateFields.notes = notes
+    await appointmentDb.updateStatus(id, updateFields)
+
+  } else if (status === 'completed' && oldStatus !== 'completed') {
+    const updateFields = { status, completed_at: new Date().toISOString() }
+    if (notes !== undefined) updateFields.notes = notes
+    await appointmentDb.updateStatus(id, updateFields)
+
+    // ── SECONDARY: Patient stats + follow-up (non-fatal) ──────────────────────
+    try {
+      const patient = await patientDb.findById(appointment.patient_id)
+      if (patient) {
+        let followUpDays = 30
+        if (appointment.treatment_category_id) {
+          const cat = await treatmentCategoryDb.findById(appointment.treatment_category_id)
+          if (cat && cat.default_follow_up_days !== undefined) followUpDays = cat.default_follow_up_days
+        }
+
+        const aptDateStr = new Date(appointment.start_at).toISOString().split('T')[0]
+        const nextVisitDate = calculateNextAppointmentDate(aptDateStr, null, followUpDays)
+
+        const patientUpdateFields = {
+          last_visit_at: appointment.start_at,
+          total_visits: (patient.total_visits || 0) + 1,
+          status: 'follow_up',
+        }
+        if (nextVisitDate) patientUpdateFields.next_follow_up_at = new Date(nextVisitDate).toISOString()
+        await patientDb.update(patient.id, patientUpdateFields)
+
+        // Auto-schedule follow-up (non-fatal)
+        if (nextVisitDate && followUpDays > 0) {
+          try {
+            const clinic = await clinicDb.getDefaultClinic()
+            const aptTime = new Date(appointment.start_at).toTimeString().slice(0, 5)
+            const nextStart = new Date(`${nextVisitDate}T${aptTime}`)
+            const nextEnd = new Date(nextStart.getTime() + (appointment.duration_minutes || 30) * 60 * 1000)
+
+            followUpApt = await appointmentDb.create({
+              clinic_id: clinic.id,
+              patient_id: appointment.patient_id,
+              doctor_id: appointment.doctor_id,
+              treatment_category_id: appointment.treatment_category_id,
+              start_at: nextStart.toISOString(),
+              end_at: nextEnd.toISOString(),
+              duration_minutes: appointment.duration_minutes || 30,
+              status: 'scheduled',
+              priority: 'normal',
+              notes: 'Auto-scheduled follow-up',
+              created_by_id: requestingUser ? requestingUser.id : appointment.doctor_id,
+            })
+          } catch (fuErr) {
+            console.error('[updateStatus] Follow-up creation failed (non-fatal):', fuErr.message)
+          }
+        }
+      }
+    } catch (patErr) {
+      console.error('[updateStatus] Patient stats update failed (non-fatal):', patErr.message)
+    }
+
+  } else if (status === 'missed') {
+    const updateFields = { status }
+    if (notes !== undefined) updateFields.notes = notes
+    await appointmentDb.updateStatus(id, updateFields)
+
+    // Patient status update (non-fatal)
+    try {
+      const patient = await patientDb.findById(appointment.patient_id)
+      if (patient) {
+        await patientDb.update(patient.id, { status: 'follow_up' })
+      }
+    } catch (patErr) {
+      console.error('[updateStatus] Patient status update failed (non-fatal):', patErr.message)
+    }
+
+  } else if (status === 'rescheduled' && nextDate && nextTime) {
+    const newStart = new Date(`${nextDate}T${nextTime}`)
+    const newEnd = new Date(newStart.getTime() + (appointment.duration_minutes || 30) * 60 * 1000)
+    const existingNotes = appointment.notes || ''
+    const newNotes = `${existingNotes} [Rescheduled ${new Date().toISOString().split('T')[0]}]`
+
+    await appointmentDb.updateStatus(id, {
+      start_at: newStart.toISOString(),
+      end_at: newEnd.toISOString(),
+      status: 'scheduled',
+      notes: notes !== undefined ? notes : newNotes,
+    })
+
+    // Patient next_follow_up update (non-fatal)
+    try {
+      const patient = await patientDb.findById(appointment.patient_id)
+      if (patient) {
+        await patientDb.update(patient.id, { next_follow_up_at: newStart.toISOString() })
+      }
+    } catch (patErr) {
+      console.error('[updateStatus] Patient follow-up date update failed (non-fatal):', patErr.message)
+    }
+
+  } else {
+    // Catch-all: confirmed, in_progress, cancelled, etc.
+    const updateFields = { status }
+    if (notes !== undefined) updateFields.notes = notes
+    await appointmentDb.updateStatus(id, updateFields)
+  }
+
+  // Audit log (non-fatal)
+  try {
+    auditService.log({
+      action: 'appointment.updateStatus',
+      userId: requestingUser?.id,
+      entityType: 'appointment',
+      entityId: id,
+      changes: { oldStatus, newStatus: status },
+      ipAddress: req?.ip,
+      userAgent: req?.get('user-agent'),
+    })
+  } catch (_) {}
+
+  // Fetch updated appointment for response
+  const updated = await appointmentDb.findById(id)
+
+  return {
+    appointment: toFrontendShape(updated),
+    followUpAppointment: followUpApt ? toFrontendShape(followUpApt) : null,
+  }
+}
+
+/**
+ * Get a single appointment by ID.
+ */
+async function getAppointmentById(id) {
+  const appointment = await appointmentDb.findById(id)
+  if (!appointment || appointment.is_deleted) throw ApiError.notFound('Appointment not found.')
+  return toFrontendShape(appointment)
+}
+
+/**
+ * Get appointments for a specific patient.
+ */
+async function getAppointmentsByPatient(patientId) {
+  const appointments = await appointmentDb.findByPatient(patientId)
+  return appointments.map(toFrontendShape)
+}
+
+/**
+ * Soft-delete an appointment.
+ */
+async function softDeleteAppointment(id, requestingUser = null, req = null) {
+  const appointment = await appointmentDb.findById(id)
+  if (!appointment || appointment.is_deleted) throw ApiError.notFound('Appointment not found.')
+  await appointmentDb.softDelete(id)
+
+  // Audit log
+  auditService.log({
+    action: 'appointment.delete',
+    userId: requestingUser?.id,
+    entityType: 'appointment',
+    entityId: id,
+    changes: { appointment_number: appointment.appointment_number },
+    ipAddress: req?.ip,
+    userAgent: req?.get('user-agent'),
+  })
+}
+
+// ─── Shape helper ─────────────────────────────────────────────────────────────
+function toFrontendShape(a) {
+  const startAt = a.start_at ? new Date(a.start_at) : null
+
+  // Handle JOIN result structure (nested objects) or flat row
+  const patient = a.patient && typeof a.patient === 'object' ? a.patient : null
+  const doctor = a.doctor && typeof a.doctor === 'object' ? a.doctor : null
+  const category = a.treatment_category && typeof a.treatment_category === 'object' ? a.treatment_category : null
+
+  return {
+    id: a.id,
+    appointmentNumber: a.appointment_number,
+    patientId: patient ? patient.id : (a.patient_id || ''),
+    patientName: patient ? patient.name : (a.patient_name || ''),
+    patientNumber: patient ? patient.patient_number : (a.patient_number || ''),
+    patientPhone: patient ? patient.phone : (a.patient_phone || ''),
+    doctorId: doctor ? doctor.id : (a.doctor_id || ''),
+    doctorName: doctor ? doctor.name : (a.doctor_name || ''),
+    doctorSpecialization: doctor ? doctor.specialization : (a.doctor_specialization || ''),
+    treatmentCategoryId: category ? category.id : (a.treatment_category_id || null),
+    treatmentCategoryName: category ? category.name : (a.treatment_category_name || 'General Consultation'),
+    treatmentCategoryCode: category ? category.code : (a.treatment_category_code || 'CONSULT'),
+    defaultDurationMinutes: category ? category.default_duration_minutes : (a.default_duration_minutes || a.duration_minutes || 30),
+    defaultFollowUpDays: category ? category.default_follow_up_days : (a.default_follow_up_days || 30),
+    date: startAt ? startAt.toISOString().split('T')[0] : null,
+    time: startAt ? startAt.toTimeString().slice(0, 5) : null,
+    startAt: a.start_at,
+    endAt: a.end_at,
+    durationMinutes: a.duration_minutes,
+    status: a.status,
+    priority: a.priority || 'normal',
+    notes: a.notes || '',
+    arrivedAt: a.arrived_at || null,
+    completedAt: a.completed_at || null,
+    reminderSent: a.reminder_sent || false,
+    isDeleted: a.is_deleted,
+    createdAt: a.created_at,
+  }
+}
+
+module.exports = {
+  getAllAppointments,
+  bookAppointment,
+  updateAppointmentStatus,
+  getAppointmentById,
+  getAppointmentsByPatient,
+  softDeleteAppointment,
+}
